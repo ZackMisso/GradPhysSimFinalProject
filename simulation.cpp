@@ -12,6 +12,7 @@ using namespace std;
 
 Simulation::Simulation(const SimParameters &params) : params_(params), time_(0)
 {
+    clearScene();
 }
 
 void Simulation::render()
@@ -153,13 +154,62 @@ void Simulation::render()
 void Simulation::takeSimulationStep()
 {
     VectorXd q, qprev, v;
+
     buildConfiguration(q, qprev, v);
     numericalIntegration(q, qprev, v);
     unbuildConfiguration(q, v);
+    reconstruction();
 
-    // pruneOverstrainedSprings();
-    // deleteSawedObjects();
     time_ += params_.timeStep;
+}
+
+void Simulation::void numericalIntegration(Eigen::VectorXd &q, Eigen::VectorXd &qprev, Eigen::VectorXd &v)
+{
+    VectorXd F;
+    SparseMatrix<double> H;
+    SparseMatrix<double> Minv;
+
+    computeMassInverse(Minv); // change for hair
+
+    // so we can explicitly constrain length during reconstruction
+    // so all we have to do is calculate the change in curvature then reconstruct
+
+    computeForceAndHessian(q, oldq, F, H);
+
+    // for (int i = 0; i < hairs_.size(); i++)
+    // {
+    //     // numericalIntegration on each individual curvature
+    // }
+
+    VectorXd guess = q;
+
+    for (int i = 0; i < params_.NewtonMaxIters; i++)
+    {
+        VectorXd fval = guess - q; // terms go here
+
+        if (fval.norm() < params_.NewtonTolerance)
+        {
+            SparseMatrix<double> I(q.size(), q.size());
+            I.setIdentity();
+            //SparseMatrix<double> Hf = I + params_.timeStep*params_.timeStep*Minv*H;
+            SparseMatrix<double> Hf = I + params_.timeStep * H; // terms go here
+            BiCGSTAB<SparseMatrix<double> > solver;
+            solver.compute(Hf);
+            VectorXd deltaguess = solver.solve(-fval);
+            guess += deltaguess;
+        }
+    }
+
+    v = (guess - q) / params_.timeStep;
+    q = guess;
+}
+
+void Simulation::reconstruction()
+{
+    for (int i = 0; i < hairs_.size(); i++)
+    {
+        hairs_[i]->reconstructHair();
+    }
 }
 
 void Simulation::addParticle(double x, double y)
@@ -265,41 +315,65 @@ void Simulation::addSaw(double x, double y)
 void Simulation::clearScene()
 {
     renderLock_.lock();
-    // {
-    //     particles_.clear();
-    //     springs_.clear();
-    //     saws_.clear();
-    //     rigids_.clear();
-    //     hinges_.clear();
-    // }
+
+    for (vector<HairInstance *>::iterator it = hairs_.begin(); it != hairs_.end(); ++i)
+    {
+        delete *it;
+    }
+
+    hairs_.clear();
+
+    // initialize the hairs for the test here
+    HairInstance* singleStrand = new HairInstance();
+    hairs_.push_back(singleStrand());
+
     renderLock_.unlock();
 }
 
 void Simulation::buildConfiguration(VectorXd &q, VectorXd &qprev, VectorXd &v)
 {
-    // int ndofs = 2*particles_.size();
-    // q.resize(ndofs);
-    // qprev.resize(ndofs);
-    // v.resize(ndofs);
-    //
-    // for(int i=0; i<(int)particles_.size(); i++)
-    // {
-    //     q.segment<2>(2*i) = particles_[i].pos;
-    //     qprev.segment<2>(2*i) = particles_[i].prevpos;
-    //     v.segment<2>(2*i) = particles_[i].vel;
-    // }
+    int ndofs = 0;
+    for (int i = 0; i < hairs_.size(); i++)
+    {
+        ndofs += hairs_[i]->getNumberOfDofs();
+    }
+
+    q.resize(ndofs);
+    qprev.resize(ndofs);
+    v.resize(ndofs);
+
+    for (int i = 0; i < hairs_.size(); i++)
+    {
+        q.segment<3>(3*i) = Vector3d(hairs_[i].getCurvatures()(i, 0), hairs_[i].getCurvatures()(i, 1), hairs_[i].getCurvatures()(i, 2));
+        qprev.segment<3>(3*i) = Vector3d(hairs_[i].getPrevCurvatures()(i, 0), hairs_[i].getPrevCurvatures()(i, 1), hairs_[i].getPrevCurvatures()(i, 2));
+        v.segment<3>(3*i) = Vector3d(hairs_[i].getCDot()(i, 0), hairs_[i].getCDot()(i, 1), hairs_[i].getCDot()(i, 2));
+    }
 }
 
 void Simulation::unbuildConfiguration(const VectorXd &q, const VectorXd &v)
 {
-    // int ndofs = q.size();
-    // assert(ndofs == int(2*particles_.size()));
-    // for(int i=0; i<ndofs/2; i++)
-    // {
-    //     particles_[i].prevpos = particles_[i].pos;
-    //     particles_[i].pos = q.segment<2>(2*i);
-    //     particles_[i].vel = v.segment<2>(2*i);
-    // }
+    int ndofs = q.size();
+
+    for (int i = 0; i < ndofs / 3; i++)
+    {
+        for (int j = 0; j < hairs_[i].getNumberOfSegments(); j++)
+        {
+            hairs_[j]->prev_urvatures_(j, 0) = hairs_[j]->curvatures_(j, 0);
+            hairs_[j]->prev_curvatures_(j, 1) = hairs_[j]->curvatures_(j, 1);
+            hairs_[j]->prev_curvatures_(j, 2) = hairs_[j]->curvatures_(j, 2);
+
+            hairs_[j]->curvatures_(j, 0) = q(i * 3);
+            hairs_[j]->curvatures_(j, 1) = q(i * 3 + 1);
+            hairs_[j]->curvatures_(j, 2) = q(i * 3 + 2);
+
+            hairs_[j]->cdot_(j, 0) = v(i * 3);
+            hairs_[j]->cdot_(j, 1) = v(i * 3 + 1);
+            hairs_[j]->cdot_(j, 1) = v(i * 3 + 2);
+
+            i++;
+        }
+        i--;
+    }
 }
 
 void Simulation::computeForceAndHessian(const VectorXd &q, const VectorXd &qprev, Eigen::VectorXd &F, SparseMatrix<double> &H)
@@ -517,311 +591,284 @@ void Simulation::processPenaltyForce(const VectorXd &q, VectorXd &F)
 
 void Simulation::computeMassInverse(Eigen::SparseMatrix<double> &Minv)
 {
-    int ndofs = 2*int(particles_.size());
-
-    Minv.resize(ndofs, ndofs);
-    Minv.setZero();
-
-    vector<Tr> Minvcoeffs;
-    for(int i=0; i<ndofs/2; i++)
-    {
-        double mass = particles_[i].fixed ? 0.0 : 1.0 / particles_[i].mass;
-
-        Minvcoeffs.push_back(Tr(2*i,   2*i,   mass));
-        Minvcoeffs.push_back(Tr(2*i+1, 2*i+1, mass));
-    }
-
-    Minv.setFromTriplets(Minvcoeffs.begin(), Minvcoeffs.end());
+    // int ndofs = 2*int(particles_.size());
+    //
+    // Minv.resize(ndofs, ndofs);
+    // Minv.setZero();
+    //
+    // vector<Tr> Minvcoeffs;
+    // for(int i=0; i<ndofs/2; i++)
+    // {
+    //     double mass = particles_[i].fixed ? 0.0 : 1.0 / particles_[i].mass;
+    //
+    //     Minvcoeffs.push_back(Tr(2*i,   2*i,   mass));
+    //     Minvcoeffs.push_back(Tr(2*i+1, 2*i+1, mass));
+    // }
+    //
+    // Minv.setFromTriplets(Minvcoeffs.begin(), Minvcoeffs.end());
 }
 
-void Simulation::computeConstraintFunction(const VectorXd &lambda, const Eigen::SparseMatrix<double> &Minv, const VectorXd &q,
-                                           const VectorXd &unconstrainedq, VectorXd &fval)
-{
-    int n = int(q.size());
-    int m = int(rigids_.size());
-    fval.setZero();
-
-    VectorXd dgT(n);
-    dgT.setZero();
-
-    VectorXd g(m);
-    g.setZero();
-
-    for(int i = 0; i < m; i++)
-    {
-        int ip1 = 2*rigids_[i].p1;
-        int ip2 = 2*rigids_[i].p2;
-
-        Vector2d p1 = q.segment<2>(ip1);
-        Vector2d p2 = q.segment<2>(ip2);
-
-        // Sum dgT
-        double lambda2 = lambda[i] * 2;
-        dgT[ip1]   += lambda2 * (p1[0] - p2[0]);
-        dgT[ip1+1] += lambda2 * (p1[1] - p2[1]);
-        dgT[ip2]   += lambda2 * (p2[0] - p1[0]);
-        dgT[ip2+1] += lambda2 * (p2[1] - p1[1]);
-
-        // Sum g
-        double dist = (p1-p2).norm();
-        g[i] += (dist * dist) - (rigids_[i].len * rigids_[i].len);
-    }
-
-    fval.segment(0, n) = (q - unconstrainedq) + Minv * dgT;
-    fval.segment(n, m) = g;
-}
-
-void Simulation::computeConstraintDifferential(const VectorXd &lambda, const Eigen::SparseMatrix<double> &Minv, const VectorXd &q,
-            Eigen::SparseMatrix<double> &dfval)
-{
-    int n = int(q.size());
-    int m = int(rigids_.size());
-    dfval.setZero();
-
-    SparseMatrix<double> Hg(n, n);
-    SparseMatrix<double> dgT(n, m);
-    SparseMatrix<double> I(n, n);
-    I.setIdentity();
-
-    vector<Tr> dgTcoeffs;
-    for(int i = 0; i < m; i++)
-    {
-        int ip1 = 2*rigids_[i].p1;
-        int ip2 = 2*rigids_[i].p2;
-
-        Vector2d p1 = q.segment<2>(ip1);
-        Vector2d p2 = q.segment<2>(ip2);
-
-        // Sum Hgi
-        double localHg = lambda[i] * 2;
-        Hg.coeffRef(ip1,   ip1)   += localHg;
-        Hg.coeffRef(ip1+1, ip1+1) += localHg;
-        Hg.coeffRef(ip2,   ip2)   += localHg;
-        Hg.coeffRef(ip2+1, ip2+1) += localHg;
-        Hg.coeffRef(ip1,   ip2)   -= localHg;
-        Hg.coeffRef(ip1+1, ip2+1) -= localHg;
-        Hg.coeffRef(ip2,   ip1)   -= localHg;
-        Hg.coeffRef(ip2+1, ip1+1) -= localHg;
-
-        // Set dgT
-        dgTcoeffs.push_back(Tr(ip1,   i, 2 * (p1[0] - p2[0])));
-        dgTcoeffs.push_back(Tr(ip1+1, i, 2 * (p1[1] - p2[1])));
-        dgTcoeffs.push_back(Tr(ip2,   i, 2 * (p2[0] - p1[0])));
-        dgTcoeffs.push_back(Tr(ip2+1, i, 2 * (p2[1] - p1[1])));
-    }
-    dgT.setFromTriplets(dgTcoeffs.begin(), dgTcoeffs.end());
-    dgT = Minv * dgT;
-
-    SparseMatrix<double> upperNxN(n, n);
-    upperNxN = I + Minv * Hg;
-
-    // Set the upper nxn matrix, dgT, and dg
-    vector<Tr> dfcoeffs;
-    for(int i = 0; i < n/2; i++)
-    {
-        dfcoeffs.push_back(Tr(2*i,   2*i,   upperNxN.coeff(2*i, 2*i)));
-        dfcoeffs.push_back(Tr(2*i+1, 2*i+1, upperNxN.coeff(2*i+1, 2*i+1)));
-    }
-    for(int i=0; i<n; i++)
-    {
-        for(int j=0; j<m; j++)
-        {
-            dfcoeffs.push_back(Tr(n+j, i,   dgT.coeff(i, j))); // dgT
-            dfcoeffs.push_back(Tr(i,   n+j, dgT.coeff(i, j))); // dg
-        }
-    }
-    dfval.setFromTriplets(dfcoeffs.begin(), dfcoeffs.end());
-}
-
-void Simulation::numericalIntegration(VectorXd &q, VectorXd &qprev, VectorXd &v)
-{
-    VectorXd F;
-    SparseMatrix<double> H;
-    SparseMatrix<double> Minv;
-
-    computeMassInverse(Minv);
-
-    switch(params_.constraintHandler)
-    {
-    case SimParameters::CH_PENALTY_FORCE:
-    {
-        VectorXd oldq = q;
-        q += params_.timeStep*v;
-        computeForceAndHessian(q, oldq, F, H);
-        processPenaltyForce(q, F);
-        v += params_.timeStep*Minv*F;
-        break;
-    }
-
-    case SimParameters::CH_STEP_AND_PROJECT:
-    {
-        // Take unconstrained step
-        VectorXd unconstrainedq = q + params_.timeStep*v;
-        computeForceAndHessian(unconstrainedq, q, F, H);
-        v+=params_.timeStep*Minv*F;
-
-        int n = int(q.size());
-        int m = int(rigids_.size());
-
-        VectorXd qguess = unconstrainedq;
-
-        VectorXd lambda(m);
-        lambda.setZero();
-
-        VectorXd fval(n + m);
-        SparseMatrix<double> dfval(n + m, n + m);
-
-        int iter = 0;
-        for(iter = 0; iter < params_.NewtonMaxIters; iter++)
-        {
-            computeConstraintFunction(lambda, Minv, qguess, unconstrainedq, fval);
-            if(fval.norm() < params_.NewtonTolerance)
-            {
-                break;
-            }
-            computeConstraintDifferential(lambda, Minv, qguess, dfval);
-            SparseQR<SparseMatrix<double>, COLAMDOrdering<int> > solver;
-            dfval.makeCompressed();
-            solver.compute(dfval);
-            VectorXd deltaguess = solver.solve(-fval);
-            // Decompose deltaguess into q and lambda
-            qguess += deltaguess.head(n);
-            lambda += deltaguess.tail(m);
-        }
-        if (iter >= params_.NewtonMaxIters)
-        {
-            cout << "Newton's Method was unable to converge in " << params_.NewtonMaxIters << " step(s)!!!" << endl;
-            exit(-1);
-        }
-        v += (qguess - unconstrainedq) / params_.timeStep;
-        q = qguess;
-        break;
-    }
-
-    case SimParameters::CH_LAGRANGE_MULTIPLIER:
-    {
-        VectorXd oldq = q;
-        q += params_.timeStep*v;
-        computeForceAndHessian(q, oldq, F, H);
-
-        int n = int(q.size());
-        int m = int(rigids_.size());
-
-        // Set dgT(q^(i+1))
-        SparseMatrix<double> dgT(n, m);
-        {
-            vector<Tr> dgTcoeffs;
-            for(int i = 0; i < m; i++)
-            {
-                int ip1 = 2*rigids_[i].p1;
-                int ip2 = 2*rigids_[i].p2;
-
-                Vector2d p1 = q.segment<2>(ip1);
-                Vector2d p2 = q.segment<2>(ip2);
-
-                // Set dgT
-                dgTcoeffs.push_back(Tr(ip1,   i, 2 * (p1[0] - p2[0])));
-                dgTcoeffs.push_back(Tr(ip1+1, i, 2 * (p1[1] - p2[1])));
-                dgTcoeffs.push_back(Tr(ip2,   i, 2 * (p2[0] - p1[0])));
-                dgTcoeffs.push_back(Tr(ip2+1, i, 2 * (p2[1] - p1[1])));
-            }
-            dgT.setFromTriplets(dgTcoeffs.begin(), dgTcoeffs.end());
-        }
-
-        VectorXd lambda(m);
-        lambda.setZero();
-
-        VectorXd fval(m);
-        SparseMatrix<double> dfval(m, m);
-
-        int iter = 0;
-        for(iter = 0; iter < params_.NewtonMaxIters; iter++)
-        {
-            fval.setZero();
-            VectorXd tmp = q+params_.timeStep*v+params_.timeStep*params_.timeStep*Minv*F+params_.timeStep*params_.timeStep*Minv*dgT*lambda;
-            // Compute fval
-            {
-                for (int i = 0; i < m; i++)
-                {
-                    int ip1 = 2*rigids_[i].p1;
-                    int ip2 = 2*rigids_[i].p2;
-
-                    Vector2d p1 = tmp.segment<2>(ip1);
-                    Vector2d p2 = tmp.segment<2>(ip2);
-
-                    // Sum g
-                    double dist = (p1-p2).norm();
-                    fval[i] += (dist * dist) - (rigids_[i].len * rigids_[i].len);
-                }
-            }
-            if(fval.norm() < params_.NewtonTolerance)
-            {
-                break;
-            }
-            // Set dgT(tmp) then transpose to get dg(tmp)
-            SparseMatrix<double> dgT2(n, m);
-            {
-                vector<Tr> dgT2coeffs;
-                for(int i = 0; i < m; i++)
-                {
-                    int ip1 = 2*rigids_[i].p1;
-                    int ip2 = 2*rigids_[i].p2;
-
-                    Vector2d p1 = tmp.segment<2>(ip1);
-                    Vector2d p2 = tmp.segment<2>(ip2);
-
-                    // Set dgT
-                    dgT2coeffs.push_back(Tr(ip1,   i, 2 * (p1[0] - p2[0])));
-                    dgT2coeffs.push_back(Tr(ip1+1, i, 2 * (p1[1] - p2[1])));
-                    dgT2coeffs.push_back(Tr(ip2,   i, 2 * (p2[0] - p1[0])));
-                    dgT2coeffs.push_back(Tr(ip2+1, i, 2 * (p2[1] - p1[1])));
-                }
-                dgT2.setFromTriplets(dgT2coeffs.begin(), dgT2coeffs.end());
-            }
-            dfval = dgT2.transpose()*params_.timeStep*params_.timeStep*Minv*dgT;
-
-            SparseQR<SparseMatrix<double>, COLAMDOrdering<int> > solver;
-            dfval.makeCompressed();
-            solver.compute(dfval);
-            lambda += solver.solve(-fval);
-        }
-        if (iter >= params_.NewtonMaxIters)
-        {
-            cout << "Newton's Method was unable to converge in " << params_.NewtonMaxIters << " step(s)!!!" << endl;
-            exit(-1);
-        }
-        computeForceAndHessian(q, oldq, F, H);
-        v += params_.timeStep*Minv*F+params_.timeStep*Minv*dgT*lambda;
-        break;
-    }
-    }
-}
-
-// void Simulation::pruneOverstrainedSprings()
+// void Simulation::computeConstraintFunction(const VectorXd &lambda, const Eigen::SparseMatrix<double> &Minv, const VectorXd &q,
+//                                            const VectorXd &unconstrainedq, VectorXd &fval)
 // {
-//     int nsprings = springs_.size();
+//     int n = int(q.size());
+//     int m = int(rigids_.size());
+//     fval.setZero();
 //
-//     vector<int> toremove;
-//     for(int i=0; i<nsprings; i++)
+//     VectorXd dgT(n);
+//     dgT.setZero();
+//
+//     VectorXd g(m);
+//     g.setZero();
+//
+//     for(int i = 0; i < m; i++)
 //     {
-//         if (!springs_[i].unsnappable)
-//         {
-//             Vector2d srcpos = particles_[springs_[i].p1].pos;
-//             Vector2d dstpos = particles_[springs_[i].p2].pos;
-//             double dist = (dstpos-srcpos).norm();
+//         int ip1 = 2*rigids_[i].p1;
+//         int ip2 = 2*rigids_[i].p2;
 //
-//             double strain = (dist - springs_[i].restlen)/springs_[i].restlen;
-//             if(strain > params_.maxSpringStrain)
-//                 toremove.push_back(i);
+//         Vector2d p1 = q.segment<2>(ip1);
+//         Vector2d p2 = q.segment<2>(ip2);
+//
+//         // Sum dgT
+//         double lambda2 = lambda[i] * 2;
+//         dgT[ip1]   += lambda2 * (p1[0] - p2[0]);
+//         dgT[ip1+1] += lambda2 * (p1[1] - p2[1]);
+//         dgT[ip2]   += lambda2 * (p2[0] - p1[0]);
+//         dgT[ip2+1] += lambda2 * (p2[1] - p1[1]);
+//
+//         // Sum g
+//         double dist = (p1-p2).norm();
+//         g[i] += (dist * dist) - (rigids_[i].len * rigids_[i].len);
+//     }
+//
+//     fval.segment(0, n) = (q - unconstrainedq) + Minv * dgT;
+//     fval.segment(n, m) = g;
+// }
+//
+// void Simulation::computeConstraintDifferential(const VectorXd &lambda, const Eigen::SparseMatrix<double> &Minv, const VectorXd &q,
+//             Eigen::SparseMatrix<double> &dfval)
+// {
+//     int n = int(q.size());
+//     int m = int(rigids_.size());
+//     dfval.setZero();
+//
+//     SparseMatrix<double> Hg(n, n);
+//     SparseMatrix<double> dgT(n, m);
+//     SparseMatrix<double> I(n, n);
+//     I.setIdentity();
+//
+//     vector<Tr> dgTcoeffs;
+//     for(int i = 0; i < m; i++)
+//     {
+//         int ip1 = 2*rigids_[i].p1;
+//         int ip2 = 2*rigids_[i].p2;
+//
+//         Vector2d p1 = q.segment<2>(ip1);
+//         Vector2d p2 = q.segment<2>(ip2);
+//
+//         // Sum Hgi
+//         double localHg = lambda[i] * 2;
+//         Hg.coeffRef(ip1,   ip1)   += localHg;
+//         Hg.coeffRef(ip1+1, ip1+1) += localHg;
+//         Hg.coeffRef(ip2,   ip2)   += localHg;
+//         Hg.coeffRef(ip2+1, ip2+1) += localHg;
+//         Hg.coeffRef(ip1,   ip2)   -= localHg;
+//         Hg.coeffRef(ip1+1, ip2+1) -= localHg;
+//         Hg.coeffRef(ip2,   ip1)   -= localHg;
+//         Hg.coeffRef(ip2+1, ip1+1) -= localHg;
+//
+//         // Set dgT
+//         dgTcoeffs.push_back(Tr(ip1,   i, 2 * (p1[0] - p2[0])));
+//         dgTcoeffs.push_back(Tr(ip1+1, i, 2 * (p1[1] - p2[1])));
+//         dgTcoeffs.push_back(Tr(ip2,   i, 2 * (p2[0] - p1[0])));
+//         dgTcoeffs.push_back(Tr(ip2+1, i, 2 * (p2[1] - p1[1])));
+//     }
+//     dgT.setFromTriplets(dgTcoeffs.begin(), dgTcoeffs.end());
+//     dgT = Minv * dgT;
+//
+//     SparseMatrix<double> upperNxN(n, n);
+//     upperNxN = I + Minv * Hg;
+//
+//     // Set the upper nxn matrix, dgT, and dg
+//     vector<Tr> dfcoeffs;
+//     for(int i = 0; i < n/2; i++)
+//     {
+//         dfcoeffs.push_back(Tr(2*i,   2*i,   upperNxN.coeff(2*i, 2*i)));
+//         dfcoeffs.push_back(Tr(2*i+1, 2*i+1, upperNxN.coeff(2*i+1, 2*i+1)));
+//     }
+//     for(int i=0; i<n; i++)
+//     {
+//         for(int j=0; j<m; j++)
+//         {
+//             dfcoeffs.push_back(Tr(n+j, i,   dgT.coeff(i, j))); // dgT
+//             dfcoeffs.push_back(Tr(i,   n+j, dgT.coeff(i, j))); // dg
 //         }
 //     }
+//     dfval.setFromTriplets(dfcoeffs.begin(), dfcoeffs.end());
+// }
+
+// void Simulation::numericalIntegrationOld(VectorXd &q, VectorXd &qprev, VectorXd &v)
+// {
+//     VectorXd F;
+//     SparseMatrix<double> H;
+//     SparseMatrix<double> Minv;
 //
-//     renderLock_.lock();
+//     computeMassInverse(Minv);
+//
+//     switch(params_.constraintHandler)
 //     {
-//         for(vector<int>::reverse_iterator it = toremove.rbegin(); it != toremove.rend(); ++it)
-//             springs_.erase(springs_.begin() + *it);
+//         case SimParameters::CH_PENALTY_FORCE:
+//         {
+//             VectorXd oldq = q;
+//             q += params_.timeStep*v;
+//             computeForceAndHessian(q, oldq, F, H);
+//             processPenaltyForce(q, F);
+//             v += params_.timeStep*Minv*F;
+//             break;
+//         }
+//
+//         case SimParameters::CH_STEP_AND_PROJECT:
+//         {
+//             // Take unconstrained step
+//             VectorXd unconstrainedq = q + params_.timeStep*v;
+//             computeForceAndHessian(unconstrainedq, q, F, H);
+//             v+=params_.timeStep*Minv*F;
+//
+//             int n = int(q.size());
+//             int m = int(rigids_.size());
+//
+//             VectorXd qguess = unconstrainedq;
+//
+//             VectorXd lambda(m);
+//             lambda.setZero();
+//
+//             VectorXd fval(n + m);
+//             SparseMatrix<double> dfval(n + m, n + m);
+//
+//             int iter = 0;
+//             for(iter = 0; iter < params_.NewtonMaxIters; iter++)
+//             {
+//                 computeConstraintFunction(lambda, Minv, qguess, unconstrainedq, fval);
+//                 if(fval.norm() < params_.NewtonTolerance)
+//                 {
+//                     break;
+//                 }
+//                 computeConstraintDifferential(lambda, Minv, qguess, dfval);
+//                 SparseQR<SparseMatrix<double>, COLAMDOrdering<int> > solver;
+//                 dfval.makeCompressed();
+//                 solver.compute(dfval);
+//                 VectorXd deltaguess = solver.solve(-fval);
+//                 // Decompose deltaguess into q and lambda
+//                 qguess += deltaguess.head(n);
+//                 lambda += deltaguess.tail(m);
+//             }
+//             if (iter >= params_.NewtonMaxIters)
+//             {
+//                 cout << "Newton's Method was unable to converge in " << params_.NewtonMaxIters << " step(s)!!!" << endl;
+//                 exit(-1);
+//             }
+//             v += (qguess - unconstrainedq) / params_.timeStep;
+//             q = qguess;
+//             break;
+//         }
+//
+//         case SimParameters::CH_LAGRANGE_MULTIPLIER:
+//         {
+//             VectorXd oldq = q;
+//             q += params_.timeStep*v;
+//             computeForceAndHessian(q, oldq, F, H);
+//
+//             int n = int(q.size());
+//             int m = int(rigids_.size());
+//
+//             // Set dgT(q^(i+1))
+//             SparseMatrix<double> dgT(n, m);
+//             {
+//                 vector<Tr> dgTcoeffs;
+//                 for(int i = 0; i < m; i++)
+//                 {
+//                     int ip1 = 2*rigids_[i].p1;
+//                     int ip2 = 2*rigids_[i].p2;
+//
+//                     Vector2d p1 = q.segment<2>(ip1);
+//                     Vector2d p2 = q.segment<2>(ip2);
+//
+//                     // Set dgT
+//                     dgTcoeffs.push_back(Tr(ip1,   i, 2 * (p1[0] - p2[0])));
+//                     dgTcoeffs.push_back(Tr(ip1+1, i, 2 * (p1[1] - p2[1])));
+//                     dgTcoeffs.push_back(Tr(ip2,   i, 2 * (p2[0] - p1[0])));
+//                     dgTcoeffs.push_back(Tr(ip2+1, i, 2 * (p2[1] - p1[1])));
+//                 }
+//                 dgT.setFromTriplets(dgTcoeffs.begin(), dgTcoeffs.end());
+//             }
+//
+//             VectorXd lambda(m);
+//             lambda.setZero();
+//
+//             VectorXd fval(m);
+//             SparseMatrix<double> dfval(m, m);
+//
+//             int iter = 0;
+//             for(iter = 0; iter < params_.NewtonMaxIters; iter++)
+//             {
+//                 fval.setZero();
+//                 VectorXd tmp = q+params_.timeStep*v+params_.timeStep*params_.timeStep*Minv*F+params_.timeStep*params_.timeStep*Minv*dgT*lambda;
+//                 // Compute fval
+//                 {
+//                     for (int i = 0; i < m; i++)
+//                     {
+//                         int ip1 = 2*rigids_[i].p1;
+//                         int ip2 = 2*rigids_[i].p2;
+//
+//                         Vector2d p1 = tmp.segment<2>(ip1);
+//                         Vector2d p2 = tmp.segment<2>(ip2);
+//
+//                         // Sum g
+//                         double dist = (p1-p2).norm();
+//                         fval[i] += (dist * dist) - (rigids_[i].len * rigids_[i].len);
+//                     }
+//                 }
+//                 if(fval.norm() < params_.NewtonTolerance)
+//                 {
+//                     break;
+//                 }
+//                 // Set dgT(tmp) then transpose to get dg(tmp)
+//                 SparseMatrix<double> dgT2(n, m);
+//                 {
+//                     vector<Tr> dgT2coeffs;
+//                     for(int i = 0; i < m; i++)
+//                     {
+//                         int ip1 = 2*rigids_[i].p1;
+//                         int ip2 = 2*rigids_[i].p2;
+//
+//                         Vector2d p1 = tmp.segment<2>(ip1);
+//                         Vector2d p2 = tmp.segment<2>(ip2);
+//
+//                         // Set dgT
+//                         dgT2coeffs.push_back(Tr(ip1,   i, 2 * (p1[0] - p2[0])));
+//                         dgT2coeffs.push_back(Tr(ip1+1, i, 2 * (p1[1] - p2[1])));
+//                         dgT2coeffs.push_back(Tr(ip2,   i, 2 * (p2[0] - p1[0])));
+//                         dgT2coeffs.push_back(Tr(ip2+1, i, 2 * (p2[1] - p1[1])));
+//                     }
+//                     dgT2.setFromTriplets(dgT2coeffs.begin(), dgT2coeffs.end());
+//                 }
+//                 dfval = dgT2.transpose()*params_.timeStep*params_.timeStep*Minv*dgT;
+//
+//                 SparseQR<SparseMatrix<double>, COLAMDOrdering<int> > solver;
+//                 dfval.makeCompressed();
+//                 solver.compute(dfval);
+//                 lambda += solver.solve(-fval);
+//             }
+//             if (iter >= params_.NewtonMaxIters)
+//             {
+//                 cout << "Newton's Method was unable to converge in " << params_.NewtonMaxIters << " step(s)!!!" << endl;
+//                 exit(-1);
+//             }
+//             computeForceAndHessian(q, oldq, F, H);
+//             v += params_.timeStep*Minv*F+params_.timeStep*Minv*dgT*lambda;
+//             break;
+//         }
 //     }
-//     renderLock_.unlock();
 // }
 
 // double Simulation::ptSegmentDist(const Vector2d &p, const Vector2d &q1, const Vector2d &q2)
@@ -832,35 +879,6 @@ void Simulation::numericalIntegration(VectorXd &q, VectorXd &qprev, VectorXd &v)
 //     double q2dist = (p-q2).squaredNorm();
 //     double mindistsq = min(linedistsq, min(q1dist, q2dist));
 //     return sqrt(mindistsq);
-// }
-
-// template<typename ConnectorVector>
-// void Simulation::detectSawedConnectors(const ConnectorVector &connectors_, std::set<int> &connectorsToDelete)
-// {
-//     for(int i=0; i<(int)connectors_.size(); i++)
-//     {
-//         Vector2d pos1 = particles_[connectors_[i].p1].pos;
-//         Vector2d pos2 = particles_[connectors_[i].p2].pos;
-//         double maxx = max(pos1[0], pos2[0]);
-//         double minx = min(pos1[0], pos2[0]);
-//         double maxy = max(pos1[1], pos2[1]);
-//         double miny = min(pos1[1], pos2[1]);
-//         for(vector<Saw>::iterator saw = saws_.begin(); saw != saws_.end(); ++saw)
-//         {
-//             Vector2d sawpos = saw->pos;
-//             double sawr = saw->radius;
-//
-//             if(sawpos[0] - sawr > maxx || sawpos[0] + sawr < minx || sawpos[1] - sawr > maxy || sawpos[1] + sawr < miny)
-//                 continue;
-//
-//             double sawconnectordist = ptSegmentDist(sawpos, pos1, pos2);
-//             if(sawconnectordist <= sawr)
-//             {
-//                 connectorsToDelete.insert(i);
-//                 break;
-//             }
-//         }
-//     }
 // }
 
 // void Simulation::detectSawedParticles(std::set<int> &particlesToDelete)

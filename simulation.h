@@ -108,19 +108,21 @@ private:
     void processPenaltyForce(const Eigen::VectorXd &q, Eigen::VectorXd &F);
     void processBendingForce(const Eigen::VectorXd &q, Eigen::VectorXd &F);
 
-    void computeConstraintFunction(const Eigen::VectorXd &lambda, const Eigen::SparseMatrix<double> &Minv, const Eigen::VectorXd &q,
-                const Eigen::VectorXd &initialq, Eigen::VectorXd &fval);
-    void computeConstraintDifferential(const Eigen::VectorXd &lambda, const Eigen::SparseMatrix<double> &Minv, const Eigen::VectorXd &q,
-            Eigen::SparseMatrix<double> &dfval);
+    // void computeConstraintFunction(const Eigen::VectorXd &lambda, const Eigen::SparseMatrix<double> &Minv, const Eigen::VectorXd &q,
+    //             const Eigen::VectorXd &initialq, Eigen::VectorXd &fval);
+    // void computeConstraintDifferential(const Eigen::VectorXd &lambda, const Eigen::SparseMatrix<double> &Minv, const Eigen::VectorXd &q,
+    //         Eigen::SparseMatrix<double> &dfval);
 
     void computeMassInverse(Eigen::SparseMatrix<double> &Minv);
 
     void createFlexibleRod(Eigen::Vector2d newpos, int indexOfOther, int indexOfNew, double mass);
 
-    void numericalIntegration(Eigen::VectorXd &q, Eigen::VectorXd &qprev, Eigen::VectorXd &v);
+    // void numericalIntegrationOld(Eigen::VectorXd &q, Eigen::VectorXd &qprev, Eigen::VectorXd &v);
 
-    // void pruneOverstrainedSprings();
-    void deleteSawedObjects();
+    void numericalIntegration(Eigen::VectorXd &q, Eigen::VectorXd &qprev, Eigen::VectorXd &v);
+    void reconstruction();
+
+
     // double ptSegmentDist(const Eigen::Vector2d &p, const Eigen::Vector2d &q1, const Eigen::Vector2d &q2);
     // template<typename ConnectorVector>
     // void detectSawedConnectors(const ConnectorVector &connectors_, std::set<int> &connectorsToDelete);

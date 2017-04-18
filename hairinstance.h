@@ -21,6 +21,16 @@ public:
 
     void reconstructHair();
 
+    int getNumberOfDofs();
+    int getNumberOfSegments() { return numberOfSegments_; }
+
+    // simulation info
+    Eigen::Vector3d pos_; // location of first vert
+    Eigen::MatrixX3d curvatures_;
+    Eigen::MatrixX3d prev_curvatures_;
+    Eigen::MatrixX3d cdot_;
+    Eigen::MatrixX3d verts_;
+
 private:
     HairInstance(const HairInstance &other);
     HairInstance &operator=(const HairInstance);
@@ -33,21 +43,16 @@ private:
     void computeSegments();
     void computeNormals();
 
-    // simulation info
-    Eigen::Vector3d pos_; // location of first vert
-    Eigen::MatrixX3d curvatures_;
-    Eigen::MatrixX3d cdot_;
-    Eigen::MatrixX3d verts_;
-
     // render info
     Eigen::Vector3d color_;
-    int index_
+    int index_; // maybe use
 
     // template info
     Eigen::MatrixX3d template_verts_;
     Eigen::MatrixX3d initialCurvatures_;
     Eigen::MatrixX3d normals_;
     std::vector<Eigen::MatrixX3d> segments_;
+    std::vector<double> segmentLengths_;
     double length_;
     int edgesPerSegment_;
     int numberOfSegments_;
