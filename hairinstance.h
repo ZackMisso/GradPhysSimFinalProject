@@ -19,12 +19,14 @@ public:
 
     void render(double scale);
 
+    void reconstructHair();
+
 private:
     HairInstance(const HairInstance &other);
     HairInstance &operator=(const HairInstance);
 
     void initializeLine(int eps, int nos);
-    void initializeFromPositions(const Eigen::MatrixX3d positions, int eps, int nos);
+    void initializeFromPositions(const Eigen::MatrixX3d pos, int eps, int nos);
     void initializeFromCurvatures(const Eigen::MatrixX3d curves, int eps, int nos, int length);
 
     void computeLength();
@@ -32,15 +34,17 @@ private:
     void computeNormals();
 
     // simulation info
-    Eigen::MatrixX3d pos; // location of first vert
-    Eigen::MatrixX3d cvel;
+    Eigen::Vector3d pos_; // location of first vert
+    Eigen::MatrixX3d curvatures_;
+    Eigen::MatrixX3d cdot_;
+    Eigen::MatrixX3d verts_;
 
     // render info
-    Eigen::Vector3d color;
+    Eigen::Vector3d color_;
+    int index_
 
     // template info
-    Eigen::MatrixX3d verts_;
-    Eigen::MatrixX3d curvatures_;
+    Eigen::MatrixX3d template_verts_;
     Eigen::MatrixX3d initialCurvatures_;
     Eigen::MatrixX3d normals_;
     std::vector<Eigen::MatrixX3d> segments_;

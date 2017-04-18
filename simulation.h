@@ -13,64 +13,64 @@ typedef Eigen::Triplet<double> Tr;
 struct SimParameters;
 // class HairInstance;
 
-struct Particle
-{
-public:
-    Particle(Eigen::Vector2d pos, double mass, bool isFixed, bool isInert) : pos(pos), mass(mass), fixed(isFixed), inert(isInert)
-    {
-        vel.setZero();
-        prevpos = pos;
-    }
-
-    Eigen::Vector2d pos;
-    Eigen::Vector2d prevpos;
-    Eigen::Vector2d vel;
-    double mass;
-    bool fixed;
-    bool inert;
-};
-
-struct Spring
-{
-public:
-    Spring(int p1, int p2, double stiffness, double restlen, bool unsnappable, double mass) : p1(p1), p2(p2), stiffness(stiffness), restlen(restlen), unsnappable(unsnappable), mass(mass) {}
-
-    int p1;
-    int p2;
-    double stiffness;
-    double restlen;
-    bool unsnappable;
-    double mass;
-};
-
-struct RigidRod
-{
-public:
-    RigidRod(int p1, int p2, double len) : p1(p1), p2(p2), len(len) {}
-
-    int p1;
-    int p2;
-    double len;
-};
-
-struct BendingHinge
-{
-public:
-    BendingHinge(int s1, int s2, double stiffness) : s1(s1), s2(s2), stiffness(stiffness) {}
-
-    int s1;
-    int s2;
-    double stiffness;
-};
-
-struct Saw
-{
-public:
-    Saw(Eigen::Vector2d pos, double radius) : pos(pos), radius(radius) {}
-
-    Eigen::Vector2d pos;
-    double radius;
-};
+// struct Particle
+// {
+// public:
+//     Particle(Eigen::Vector2d pos, double mass, bool isFixed, bool isInert) : pos(pos), mass(mass), fixed(isFixed), inert(isInert)
+//     {
+//         vel.setZero();
+//         prevpos = pos;
+//     }
+//
+//     Eigen::Vector2d pos;
+//     Eigen::Vector2d prevpos;
+//     Eigen::Vector2d vel;
+//     double mass;
+//     bool fixed;
+//     bool inert;
+// };
+//
+// struct Spring
+// {
+// public:
+//     Spring(int p1, int p2, double stiffness, double restlen, bool unsnappable, double mass) : p1(p1), p2(p2), stiffness(stiffness), restlen(restlen), unsnappable(unsnappable), mass(mass) {}
+//
+//     int p1;
+//     int p2;
+//     double stiffness;
+//     double restlen;
+//     bool unsnappable;
+//     double mass;
+// };
+//
+// struct RigidRod
+// {
+// public:
+//     RigidRod(int p1, int p2, double len) : p1(p1), p2(p2), len(len) {}
+//
+//     int p1;
+//     int p2;
+//     double len;
+// };
+//
+// struct BendingHinge
+// {
+// public:
+//     BendingHinge(int s1, int s2, double stiffness) : s1(s1), s2(s2), stiffness(stiffness) {}
+//
+//     int s1;
+//     int s2;
+//     double stiffness;
+// };
+//
+// struct Saw
+// {
+// public:
+//     Saw(Eigen::Vector2d pos, double radius) : pos(pos), radius(radius) {}
+//
+//     Eigen::Vector2d pos;
+//     double radius;
+// };
 
 class Simulation
 {
@@ -91,11 +91,11 @@ private:
     double time_;
     std::vector<HairInstance*> hairs_;
 
-    std::vector<Particle> particles_;
-    std::vector<Spring> springs_;
-    std::vector<RigidRod> rigids_;
-    std::vector<BendingHinge> hinges_;
-    std::vector<Saw> saws_;
+    // std::vector<Particle> particles_;
+    // std::vector<Spring> springs_;
+    // std::vector<RigidRod> rigids_;
+    // std::vector<BendingHinge> hinges_;
+    // std::vector<Saw> saws_;
 
     void buildConfiguration(Eigen::VectorXd &q, Eigen::VectorXd &qprev, Eigen::VectorXd &v);
     void unbuildConfiguration(const Eigen::VectorXd &q, const Eigen::VectorXd &v);
@@ -119,12 +119,12 @@ private:
 
     void numericalIntegration(Eigen::VectorXd &q, Eigen::VectorXd &qprev, Eigen::VectorXd &v);
 
-    void pruneOverstrainedSprings();
+    // void pruneOverstrainedSprings();
     void deleteSawedObjects();
-    double ptSegmentDist(const Eigen::Vector2d &p, const Eigen::Vector2d &q1, const Eigen::Vector2d &q2);
-    template<typename ConnectorVector>
-    void detectSawedConnectors(const ConnectorVector &connectors_, std::set<int> &connectorsToDelete);
-    void detectSawedParticles(std::set<int> &particlesToDelete);
+    // double ptSegmentDist(const Eigen::Vector2d &p, const Eigen::Vector2d &q1, const Eigen::Vector2d &q2);
+    // template<typename ConnectorVector>
+    // void detectSawedConnectors(const ConnectorVector &connectors_, std::set<int> &connectorsToDelete);
+    // void detectSawedParticles(std::set<int> &particlesToDelete);
 };
 
 #endif // SIMULATION_H

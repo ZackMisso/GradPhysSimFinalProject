@@ -7,12 +7,12 @@ using namespace Eigen;
 
 HairInstance::HairInstance()
 {
-    // to be implemented
+    initializeLine(20, 1);
 }
 
-HairInstance::HairInstance(const Eigen::MatrixX3d &verts)
+HairInstance::HairInstance(const Eigen::MatrixX3d &pos)
 {
-    // to be implemented
+    initializeFromPositions(pos, 20, 1);
 }
 
 HairInstance::~HairInstance()
@@ -27,15 +27,26 @@ HairInstance::HairInstance(const HairInstance& other)
 
 void HairInstance::initializeLine(int eps, int nos)
 {
+    edgesPerSegment_ = eps;
+    numberOfSegments_ = nos;
     // to be implemented
 }
 
 void HairInstance::initializeFromPositions(const MatrixX3d positions, int eps, int nos)
 {
+    edgesPerSegment_ = eps;
+    numberOfSegments_ = nos;
     // to be implemented
 }
 
 void HairInstance::initializeFromCurvatures(const MatrixX3d curves, int eps, int nos, int length)
+{
+    edgesPerSegment_ = eps;
+    numberOfSegments_ = nos;
+    // to be implemented
+}
+
+void HairInstance::reconstructHair()
 {
     // to be implemented
 }
