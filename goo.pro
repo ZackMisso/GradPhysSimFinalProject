@@ -13,17 +13,34 @@ TEMPLATE = app
 
 INCLUDEPATH += $$_PRO_FILE_PWD_/eigen_3.2.2/
 
+win32 {
+    LIBS += -lopengl32
+}
+
+unix {
+    LIBS += -lGLU
+    QMAKE_CXXFLAGS += -std=c++11 -g
+}
+
 SOURCES += main.cpp\
         mainwindow.cpp \
     glpanel.cpp \
     controller.cpp \
     simulation.cpp \
-    simparameters.cpp
+    simparameters.cpp \
+    camera.cpp \
+    vectormath.cpp \
+    hairinstance.cpp
 
 HEADERS  += mainwindow.h \
     glpanel.h \
     controller.h \
     simulation.h \
-    simparameters.h
+    simparameters.h \
+    camera.h \
+    vectormath.h \
+    hairinstance.h
 
 FORMS    += mainwindow.ui
+
+CONFIG += c++11

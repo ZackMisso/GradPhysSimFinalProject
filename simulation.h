@@ -6,10 +6,12 @@
 #include <vector>
 #include <set>
 #include <QMutex>
+#include "hairinstance.h"
 
 typedef Eigen::Triplet<double> Tr;
 
 struct SimParameters;
+// class HairInstance;
 
 struct Particle
 {
@@ -87,6 +89,8 @@ private:
     QMutex renderLock_;
 
     double time_;
+    std::vector<HairInstance*> hairs_;
+
     std::vector<Particle> particles_;
     std::vector<Spring> springs_;
     std::vector<RigidRod> rigids_;

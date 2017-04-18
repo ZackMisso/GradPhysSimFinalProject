@@ -1,6 +1,7 @@
 ﻿#include "simulation.h"
 #include <QGLWidget>
 #include "simparameters.h"
+#include "hairinstance.h"
 #include <iostream>
 #include <Eigen/Dense>
 
@@ -15,127 +16,138 @@ Simulation::Simulation(const SimParameters &params) : params_(params), time_(0)
 
 void Simulation::render()
 {
-    double baseradius = 0.02;
-    double pulsefactor = 0.1;
-    double pulsespeed = 50.0;
-
-    int sawteeth = 20;
-    double sawdepth = 0.1;
-    double sawangspeed = 10.0;
-
-    double baselinewidth = 0.5;
-
-    int numcirclewedges = 20;
-
-    if(params_.activeForces & SimParameters::F_FLOOR)
+    // glLineWidth(2.0);
+    if (renderLock_.tryLock())
     {
-        glBegin(GL_TRIANGLES);
+        for (int i = 0; i < hairs_.size(); i++)
         {
-            glColor3f(0.3, 1.0, 0.3);
-
-            glVertex2f(-1, -0.5);
-            glVertex2f(1, -0.5);
-            glVertex2f(-1, -1);
-
-            glVertex2f(-1, -1);
-            glVertex2f(1, -0.5);
-            glVertex2f(1, -1);
+            hairs_[i]->render(params_.artificialScale);
+            // hairs_[i]->render();
         }
-        glEnd();
+        renderLock_.unlock();
     }
 
-    renderLock_.lock();
-    {
-        int springIndex = -1;
-        for(vector<Spring>::iterator it = springs_.begin(); it != springs_.end(); ++it)
-        {
-            glColor3f(0.0, 0.0, 1.0);
-            springIndex++;
-
-            for(vector<BendingHinge>::iterator bit = hinges_.begin(); bit != hinges_.end(); ++bit)
-            {
-                if (bit->s1 == springIndex || bit->s2==springIndex)
-                {
-                    glColor3f(0.7, 0.0, 0.34);
-                }
-            }
-
-            Vector2d sourcepos = particles_[it->p1].pos;
-            Vector2d destpos   = particles_[it->p2].pos;
-
-            double dist = (sourcepos-destpos).norm();
-
-            glLineWidth(baselinewidth/dist);
-
-            glBegin(GL_LINES);
-            glVertex2f(sourcepos[0], sourcepos[1]);
-            glVertex2f(destpos[0], destpos[1]);
-            glEnd();
-        }
-
-        for(vector<RigidRod>::iterator it = rigids_.begin(); it != rigids_.end(); ++it)
-        {
-            glColor3f(1.0, 0.0, 1.0);
-            Vector2d sourcepos = particles_[it->p1].pos;
-            Vector2d destpos   = particles_[it->p2].pos;
-
-            double dist = (sourcepos-destpos).norm();
-
-            glLineWidth(baselinewidth/dist);
-
-            glBegin(GL_LINES);
-            glVertex2f(sourcepos[0], sourcepos[1]);
-            glVertex2f(destpos[0], destpos[1]);
-            glEnd();
-        }
-
-        for(vector<Particle>::iterator it = particles_.begin(); it != particles_.end(); ++it)
-        {
-            double radius = baseradius*sqrt(it->mass);
-            radius *= (1.0 + pulsefactor*sin(pulsespeed*time_));
-
-            glColor3f(0,0,0);
-
-            if(it->fixed)
-            {
-                radius = baseradius;
-                glColor3f(1.0,0,0);
-            }
-
-            glBegin(GL_TRIANGLE_FAN);
-            {
-                glVertex2f(it->pos[0], it->pos[1]);
-                for(int i=0; i<=numcirclewedges; i++)
-                {
-                    glVertex2f(it->pos[0] + radius * cos(2*PI*i/numcirclewedges),
-                               it->pos[1] + radius * sin(2*PI*i/numcirclewedges));
-                }
-            }
-            glEnd();
-        }
-
-        for(vector<Saw>::iterator it = saws_.begin(); it != saws_.end(); ++it)
-        {
-            double outerradius = it->radius;
-            double innerradius = (1.0-sawdepth)*outerradius;
-
-            glColor3f(0.5,0.5,0.5);
-
-            glBegin(GL_TRIANGLE_FAN);
-            {
-                glVertex2f(it->pos[0], it->pos[1]);
-                int spokes = 2*sawteeth;
-                for(int i=0; i<=spokes; i++)
-                {
-                    double radius = (i%2==0) ? innerradius : outerradius;
-                    glVertex2f(it->pos[0] + radius * cos(2*PI*i/spokes + sawangspeed*time_),
-                               it->pos[1] + radius * sin(2*PI*i/spokes + sawangspeed*time_));
-                }
-            }
-            glEnd();
-        }
-    }
-    renderLock_.unlock();
+    // double baseradius = 0.02;
+    // double pulsefactor = 0.1;
+    // double pulsespeed = 50.0;
+    //
+    // int sawteeth = 20;
+    // double sawdepth = 0.1;
+    // double sawangspeed = 10.0;
+    //
+    // double baselinewidth = 0.5;
+    //
+    // int numcirclewedges = 20;
+    //
+    // if(params_.activeForces & SimParameters::F_FLOOR)
+    // {
+    //     glBegin(GL_TRIANGLES);
+    //     {
+    //         glColor3f(0.3, 1.0, 0.3);
+    //
+    //         glVertex2f(-1, -0.5);
+    //         glVertex2f(1, -0.5);
+    //         glVertex2f(-1, -1);
+    //
+    //         glVertex2f(-1, -1);
+    //         glVertex2f(1, -0.5);
+    //         glVertex2f(1, -1);
+    //     }
+    //     glEnd();
+    // }
+    //
+    // renderLock_.lock();
+    // {
+    //     int springIndex = -1;
+    //     for(vector<Spring>::iterator it = springs_.begin(); it != springs_.end(); ++it)
+    //     {
+    //         glColor3f(0.0, 0.0, 1.0);
+    //         springIndex++;
+    //
+    //         for(vector<BendingHinge>::iterator bit = hinges_.begin(); bit != hinges_.end(); ++bit)
+    //         {
+    //             if (bit->s1 == springIndex || bit->s2==springIndex)
+    //             {
+    //                 glColor3f(0.7, 0.0, 0.34);
+    //             }
+    //         }
+    //
+    //         Vector2d sourcepos = particles_[it->p1].pos;
+    //         Vector2d destpos   = particles_[it->p2].pos;
+    //
+    //         double dist = (sourcepos-destpos).norm();
+    //
+    //         glLineWidth(baselinewidth/dist);
+    //
+    //         glBegin(GL_LINES);
+    //         glVertex2f(sourcepos[0], sourcepos[1]);
+    //         glVertex2f(destpos[0], destpos[1]);
+    //         glEnd();
+    //     }
+    //
+    //     for(vector<RigidRod>::iterator it = rigids_.begin(); it != rigids_.end(); ++it)
+    //     {
+    //         glColor3f(1.0, 0.0, 1.0);
+    //         Vector2d sourcepos = particles_[it->p1].pos;
+    //         Vector2d destpos   = particles_[it->p2].pos;
+    //
+    //         double dist = (sourcepos-destpos).norm();
+    //
+    //         glLineWidth(baselinewidth/dist);
+    //
+    //         glBegin(GL_LINES);
+    //         glVertex2f(sourcepos[0], sourcepos[1]);
+    //         glVertex2f(destpos[0], destpos[1]);
+    //         glEnd();
+    //     }
+    //
+    //     for(vector<Particle>::iterator it = particles_.begin(); it != particles_.end(); ++it)
+    //     {
+    //         double radius = baseradius*sqrt(it->mass);
+    //         radius *= (1.0 + pulsefactor*sin(pulsespeed*time_));
+    //
+    //         glColor3f(0,0,0);
+    //
+    //         if(it->fixed)
+    //         {
+    //             radius = baseradius;
+    //             glColor3f(1.0,0,0);
+    //         }
+    //
+    //         glBegin(GL_TRIANGLE_FAN);
+    //         {
+    //             glVertex2f(it->pos[0], it->pos[1]);
+    //             for(int i=0; i<=numcirclewedges; i++)
+    //             {
+    //                 glVertex2f(it->pos[0] + radius * cos(2*PI*i/numcirclewedges),
+    //                            it->pos[1] + radius * sin(2*PI*i/numcirclewedges));
+    //             }
+    //         }
+    //         glEnd();
+    //     }
+    //
+    //     for(vector<Saw>::iterator it = saws_.begin(); it != saws_.end(); ++it)
+    //     {
+    //         double outerradius = it->radius;
+    //         double innerradius = (1.0-sawdepth)*outerradius;
+    //
+    //         glColor3f(0.5,0.5,0.5);
+    //
+    //         glBegin(GL_TRIANGLE_FAN);
+    //         {
+    //             glVertex2f(it->pos[0], it->pos[1]);
+    //             int spokes = 2*sawteeth;
+    //             for(int i=0; i<=spokes; i++)
+    //             {
+    //                 double radius = (i%2==0) ? innerradius : outerradius;
+    //                 glVertex2f(it->pos[0] + radius * cos(2*PI*i/spokes + sawangspeed*time_),
+    //                            it->pos[1] + radius * sin(2*PI*i/spokes + sawangspeed*time_));
+    //             }
+    //         }
+    //         glEnd();
+    //     }
+    // }
+    // renderLock_.unlock();
 }
 
 void Simulation::takeSimulationStep()

@@ -40,6 +40,8 @@ struct SimParameters
     double rodStretchingStiffness;
     double rodBendingStiffness;
     int rodSegments;
+
+    double artificialScale;
 };
 
 #endif // SIMPARAMETERS_H

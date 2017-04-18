@@ -27,4 +27,6 @@ SimParameters::SimParameters()
     rodStretchingStiffness = 100.0;
     rodBendingStiffness = 0.05;
     rodSegments = 5;
+
+    artificialScale = 1.0;
 }

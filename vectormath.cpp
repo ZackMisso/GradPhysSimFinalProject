@@ -85,12 +85,12 @@ const Matrix3d VectorMath::DrotVector(const Vector3d &axisangle, const Vector3d 
     return result;
 }
 
-const Eigen::Vector3d VectorMath::randomPointOnSphere()
-{
-    std::random_device r;
-    std::mt19937 generator(r());
-    std::normal_distribution<double> distribution(0.0,1.0);
-    Vector3d vec(distribution(generator), distribution(generator), distribution(generator));
-    vec /= vec.norm();
-    return vec;
-}
+// const Eigen::Vector3d VectorMath::randomPointOnSphere()
+// {
+//     std::random_device r;
+//     std::mt19937 generator(r());
+//     std::normal_distribution<double> distribution(0.0,1.0);
+//     Vector3d vec(distribution(generator), distribution(generator), distribution(generator));
+//     vec /= vec.norm();
+//     return vec;
+// }

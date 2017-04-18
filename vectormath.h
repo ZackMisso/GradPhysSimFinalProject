@@ -13,7 +13,7 @@ public:
     static const Eigen::Matrix3d DrotVector(const Eigen::Vector3d &axisangle, const Eigen::Vector3d &rotatingVector);
     static const Eigen::Matrix3d TMatrix(const Eigen::Vector3d &v);
     static double randomUnitIntervalReal();
-    static const Eigen::Vector3d randomPointOnSphere();
+    // static const Eigen::Vector3d randomPointOnSphere();
 };
 
 #endif // MATH_H
