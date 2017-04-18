@@ -1,0 +1,13 @@
+*.pro.user
+*.swp
+Makefile
+goo
+*.o
+moc_controller.cpp
+moc_glpanel.cpp
+moc_mainwindow.cpp
+ui_mainwindow.h
+moc_predefs.h
+goo.app/
+.qmake.stash
+*.pdf
