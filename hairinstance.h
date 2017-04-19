@@ -28,8 +28,10 @@ public:
     Eigen::Vector3d pos_; // location of first vert
     Eigen::MatrixX3d curvatures_;
     Eigen::MatrixX3d prev_curvatures_;
-    Eigen::MatrixX3d cdot_;
+    Eigen::MatrixX3d curvatures_dot_;
+    // use the bottom two for rendering later
     Eigen::MatrixX3d verts_;
+    // Eigen::MatrixX3d verts_dot;
 
 private:
     HairInstance(const HairInstance &other);
@@ -43,6 +45,9 @@ private:
     void computeSegments();
     void computeNormals();
 
+    Eigen::Vector3d para(Eigen::Vector3d vec, Eigen::Vector3d omega);
+    Eigen::Vector3d perp(Eigen::Vector3d vec, Eigen::Vector3d omega);
+
     // render info
     Eigen::Vector3d color_;
     int index_; // maybe use
@@ -54,6 +59,8 @@ private:
     std::vector<Eigen::MatrixX3d> segments_;
     std::vector<double> segmentLengths_;
     double length_;
+    double lengthPerSegment_;
+    double lengthPerEdge_;
     int edgesPerSegment_;
     int numberOfSegments_;
 };

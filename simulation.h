@@ -121,12 +121,6 @@ private:
 
     void numericalIntegration(Eigen::VectorXd &q, Eigen::VectorXd &qprev, Eigen::VectorXd &v);
     void reconstruction();
-
-
-    // double ptSegmentDist(const Eigen::Vector2d &p, const Eigen::Vector2d &q1, const Eigen::Vector2d &q2);
-    // template<typename ConnectorVector>
-    // void detectSawedConnectors(const ConnectorVector &connectors_, std::set<int> &connectorsToDelete);
-    // void detectSawedParticles(std::set<int> &particlesToDelete);
 };
 
 #endif // SIMULATION_H
