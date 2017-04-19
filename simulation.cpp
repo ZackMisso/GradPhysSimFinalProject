@@ -17,11 +17,13 @@ Simulation::Simulation(const SimParameters &params) : params_(params), time_(0)
 
 void Simulation::render()
 {
+    // cout << "In Render" << endl;
     // glLineWidth(2.0);
     if (renderLock_.tryLock())
     {
         for (int i = 0; i < hairs_.size(); i++)
         {
+            // cout << ""
             hairs_[i]->render(params_.artificialScale);
             // hairs_[i]->render();
         }
@@ -163,7 +165,7 @@ void Simulation::takeSimulationStep()
     time_ += params_.timeStep;
 }
 
-void Simulation::void numericalIntegration(Eigen::VectorXd &q, Eigen::VectorXd &qprev, Eigen::VectorXd &v)
+void Simulation::numericalIntegration(Eigen::VectorXd &q, Eigen::VectorXd &qprev, Eigen::VectorXd &v)
 {
     VectorXd F;
     SparseMatrix<double> H;
@@ -174,7 +176,7 @@ void Simulation::void numericalIntegration(Eigen::VectorXd &q, Eigen::VectorXd &
     // so we can explicitly constrain length during reconstruction
     // so all we have to do is calculate the change in curvature then reconstruct
 
-    computeForceAndHessian(q, oldq, F, H);
+    computeForceAndHessian(q, qprev, F, H);
 
     // for (int i = 0; i < hairs_.size(); i++)
     // {
@@ -215,6 +217,7 @@ void Simulation::reconstruction()
 void Simulation::addParticle(double x, double y)
 {
     renderLock_.lock();
+    cout << "X: " << x << " Y: " << y << endl;
     // {
     //     Vector2d newpos(x,y);
     //
@@ -316,7 +319,7 @@ void Simulation::clearScene()
 {
     renderLock_.lock();
 
-    for (vector<HairInstance *>::iterator it = hairs_.begin(); it != hairs_.end(); ++i)
+    for (vector<HairInstance *>::iterator it = hairs_.begin(); it != hairs_.end(); ++it)
     {
         delete *it;
     }
@@ -325,7 +328,7 @@ void Simulation::clearScene()
 
     // initialize the hairs for the test here
     HairInstance* singleStrand = new HairInstance();
-    hairs_.push_back(singleStrand());
+    hairs_.push_back(singleStrand);
 
     renderLock_.unlock();
 }
@@ -344,9 +347,9 @@ void Simulation::buildConfiguration(VectorXd &q, VectorXd &qprev, VectorXd &v)
 
     for (int i = 0; i < hairs_.size(); i++)
     {
-        q.segment<3>(3*i) = Vector3d(hairs_[i].getCurvatures()(i, 0), hairs_[i].getCurvatures()(i, 1), hairs_[i].getCurvatures()(i, 2));
-        qprev.segment<3>(3*i) = Vector3d(hairs_[i].getPrevCurvatures()(i, 0), hairs_[i].getPrevCurvatures()(i, 1), hairs_[i].getPrevCurvatures()(i, 2));
-        v.segment<3>(3*i) = Vector3d(hairs_[i].getCDot()(i, 0), hairs_[i].getCDot()(i, 1), hairs_[i].getCDot()(i, 2));
+        q.segment<3>(3*i) = Vector3d(hairs_[i]->curvatures_(i, 0), hairs_[i]->curvatures_(i, 1), hairs_[i]->curvatures_(i, 2));
+        qprev.segment<3>(3*i) = Vector3d(hairs_[i]->prev_curvatures_(i, 0), hairs_[i]->prev_curvatures_(i, 1), hairs_[i]->prev_curvatures_(i, 2));
+        v.segment<3>(3*i) = Vector3d(hairs_[i]->curvatures_dot_(i, 0), hairs_[i]->curvatures_dot_(i, 1), hairs_[i]->curvatures_dot_(i, 2));
     }
 }
 
@@ -356,9 +359,9 @@ void Simulation::unbuildConfiguration(const VectorXd &q, const VectorXd &v)
 
     for (int i = 0; i < ndofs / 3; i++)
     {
-        for (int j = 0; j < hairs_[i].getNumberOfSegments(); j++)
+        for (int j = 0; j < hairs_[i]->getNumberOfSegments(); j++)
         {
-            hairs_[j]->prev_urvatures_(j, 0) = hairs_[j]->curvatures_(j, 0);
+            hairs_[j]->prev_curvatures_(j, 0) = hairs_[j]->curvatures_(j, 0);
             hairs_[j]->prev_curvatures_(j, 1) = hairs_[j]->curvatures_(j, 1);
             hairs_[j]->prev_curvatures_(j, 2) = hairs_[j]->curvatures_(j, 2);
 
@@ -366,9 +369,9 @@ void Simulation::unbuildConfiguration(const VectorXd &q, const VectorXd &v)
             hairs_[j]->curvatures_(j, 1) = q(i * 3 + 1);
             hairs_[j]->curvatures_(j, 2) = q(i * 3 + 2);
 
-            hairs_[j]->cdot_(j, 0) = v(i * 3);
-            hairs_[j]->cdot_(j, 1) = v(i * 3 + 1);
-            hairs_[j]->cdot_(j, 1) = v(i * 3 + 2);
+            hairs_[j]->curvatures_dot_(j, 0) = v(i * 3);
+            hairs_[j]->curvatures_dot_(j, 1) = v(i * 3 + 1);
+            hairs_[j]->curvatures_dot_(j, 1) = v(i * 3 + 2);
 
             i++;
         }

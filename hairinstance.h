@@ -48,6 +48,8 @@ private:
     Eigen::Vector3d para(Eigen::Vector3d vec, Eigen::Vector3d omega);
     Eigen::Vector3d perp(Eigen::Vector3d vec, Eigen::Vector3d omega);
 
+    Eigen::Vector3d calculateNi(Eigen::Vector3d n0, Eigen::Vector3d n1, Eigen::Vector3d n2, Eigen::Vector3d omega, int segment, double s, double darbouxNorm, int i);
+
     // render info
     Eigen::Vector3d color_;
     int index_; // maybe use

@@ -6,12 +6,12 @@
 #include <vector>
 #include <set>
 #include <QMutex>
-#include "hairinstance.h"
+// #include "hairinstance.h"
 
 typedef Eigen::Triplet<double> Tr;
 
 struct SimParameters;
-// class HairInstance;
+class HairInstance;
 
 // struct Particle
 // {
