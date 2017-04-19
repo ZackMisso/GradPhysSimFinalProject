@@ -56,7 +56,7 @@ void HairInstance::initializeLine(int eps, int nos)
     initialCurvatures_.resize(numberOfSegments_, 3);
     initialCurvatures_.setZero();
 
-    initialCurvatures_.row() = Vector3d(,,);
+    initialCurvatures_.row() = Vector3d(0, 1, 0);
 
     curvatures_.resize(numberOfSegments_);
     curvatures_.setZero();
@@ -72,7 +72,6 @@ void HairInstance::initializeLine(int eps, int nos)
     pos_ = template_verts_.row(0);
 
     reconstructHair();
-
 
     // computeLength();
     // computeNormals();
@@ -107,6 +106,8 @@ void HairInstance::reconstructHair()
 {
     // L is in terms of the segment
     // s is distance between 0 and L for segment
+
+    cout << "Reconstructing Hair" << endl;
 
     Vector3d lastPos = pos_;
     verts_.row(0) = lastPos;

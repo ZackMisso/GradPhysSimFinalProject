@@ -156,7 +156,7 @@ void Simulation::takeSimulationStep()
     VectorXd q, qprev, v;
 
     buildConfiguration(q, qprev, v);
-    numericalIntegration(q, qprev, v);
+    // numericalIntegration(q, qprev, v);
     unbuildConfiguration(q, v);
     reconstruction();
 
