@@ -23,7 +23,7 @@ HairInstance::~HairInstance()
 
 HairInstance::HairInstance(const HairInstance& other)
 {
-    // to be implemented
+    // to be implemented for milestone 2
 }
 
 void HairInstance::initializeLine(int eps, int nos)
@@ -272,10 +272,9 @@ void HairInstance::computeNormals()
     // for (int i = 0; i < normals_.size(); i++)
     // {
     //     normals_.row(i) = Vector3d(0.0, 0.0, 1.0);
-    // }
 }
 
-void HairInstance::render(double scale)
+void HairInstance::render2D(double scale)
 {
     glLineWidth(2.0);
     glColor3f(color_[0], color_[1], color_[2]);
@@ -305,6 +304,11 @@ void HairInstance::render(double scale)
         glVertex3d(verts_(i, 0), verts_(i, 1), verts_(i, 2));
     }
     glEnd();
+}
+
+void HairInstance::render3D(double scale, double radius)
+{
+    // to be implemented
 }
 
 int HairInstance::getNumberOfDofs()

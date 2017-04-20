@@ -17,7 +17,8 @@ public:
     const Eigen::MatrixX3d &getVerts() const { return verts_; }
     const Eigen::MatrixX3d &getSegment(int seg) { return segments_[seg]; };
 
-    void render(double scale);
+    void render2D(double scale);
+    void render3D(double scale, double radius);
 
     void reconstructHair();
 
@@ -52,7 +53,7 @@ private:
 
     // render info
     Eigen::Vector3d color_;
-    int index_; // maybe use
+    int index_; // use in milestone 2
 
     // template info
     Eigen::MatrixX3d template_verts_;

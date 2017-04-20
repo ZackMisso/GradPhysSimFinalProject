@@ -24,7 +24,7 @@ void Simulation::render()
         for (int i = 0; i < hairs_.size(); i++)
         {
             // cout << ""
-            hairs_[i]->render(params_.artificialScale);
+            hairs_[i]->render2D(params_.artificialScale);
             // hairs_[i]->render();
         }
         renderLock_.unlock();
