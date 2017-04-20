@@ -41,9 +41,22 @@ void Simulation::takeSimulationStep()
 {
     VectorXd q, qprev, v;
 
+    // cout << "Before build" << endl;
     buildConfiguration(q, qprev, v);
+    // cout << "Setting Vals" << endl;
+
+    q[0] = 4 * cos(time_ / 2.0 + 0.5);
+    q[1] = 2 * sin(time_) - 3 * cos(time_);
+    q[2] = sin(time_ + 3.14 / 6);
+
+    q[3] = 3 * cos(time_) + 3 * cos(time_ / 3.14);
+    q[4] = -3 * cos(time_ / 2.0 + 0.5);;
+    q[5] = 5 - 3 * sin(time_);
+
     // numericalIntegration(q, qprev, v);
+    // cout << "Unbuild" << endl;
     unbuildConfiguration(q, v);
+    // cout << "Reconstruct" << endl;
     reconstruction();
 
     time_ += params_.timeStep;
@@ -134,10 +147,13 @@ void Simulation::clearScene()
 void Simulation::buildConfiguration(VectorXd &q, VectorXd &qprev, VectorXd &v)
 {
     int ndofs = 0;
+
     for (int i = 0; i < hairs_.size(); i++)
     {
         ndofs += hairs_[i]->getNumberOfDofs();
     }
+
+    // cout << "NDOFS" << 
 
     q.resize(ndofs);
     qprev.resize(ndofs);
@@ -155,25 +171,28 @@ void Simulation::unbuildConfiguration(const VectorXd &q, const VectorXd &v)
 {
     int ndofs = q.size();
 
+    // cout << q << endl;
+
     for (int i = 0; i < ndofs / 3; i++)
     {
         for (int j = 0; j < hairs_[i]->getNumberOfSegments(); j++)
         {
-            hairs_[j]->prev_curvatures_(j, 0) = hairs_[j]->curvatures_(j, 0);
-            hairs_[j]->prev_curvatures_(j, 1) = hairs_[j]->curvatures_(j, 1);
-            hairs_[j]->prev_curvatures_(j, 2) = hairs_[j]->curvatures_(j, 2);
+            // cout << "SETTING" << endl;
+            // cout << "SEGMENTS:L " << hairs_[i]->getNumberOfSegments() << endl;
+            hairs_[i]->prev_curvatures_(j, 0) = hairs_[j]->curvatures_(j, 0);
+            hairs_[i]->prev_curvatures_(j, 1) = hairs_[j]->curvatures_(j, 1);
+            hairs_[i]->prev_curvatures_(j, 2) = hairs_[j]->curvatures_(j, 2);
 
-            hairs_[j]->curvatures_(j, 0) = q(i * 3);
-            hairs_[j]->curvatures_(j, 1) = q(i * 3 + 1);
-            hairs_[j]->curvatures_(j, 2) = q(i * 3 + 2);
+            hairs_[i]->curvatures_(j, 0) = q(j * 3);
+            hairs_[i]->curvatures_(j, 1) = q(j * 3 + 1);
+            hairs_[i]->curvatures_(j, 2) = q(j * 3 + 2);
 
-            hairs_[j]->curvatures_dot_(j, 0) = v(i * 3);
-            hairs_[j]->curvatures_dot_(j, 1) = v(i * 3 + 1);
-            hairs_[j]->curvatures_dot_(j, 1) = v(i * 3 + 2);
+            hairs_[i]->curvatures_dot_(j, 0) = v(j * 3);
+            hairs_[i]->curvatures_dot_(j, 1) = v(j * 3 + 1);
+            hairs_[i]->curvatures_dot_(j, 1) = v(j * 3 + 2);
 
-            i++;
+            // i++;
         }
-        i--;
     }
 }
 

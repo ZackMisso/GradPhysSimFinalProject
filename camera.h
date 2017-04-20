@@ -34,6 +34,9 @@ public:
 
     void getPixelAt(const Eigen::Vector2d &pos, GLubyte *pixelbuf) const;
 
+    // Eigen::Vector3d getEye() const { return eye; }
+    // Eigen::Vector3d getCenter() const { return viewCenter_; }
+
 private:
     Eigen::Vector3d viewCenter_;
     Eigen::Vector3d eye_;

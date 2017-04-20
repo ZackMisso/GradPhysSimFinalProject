@@ -20,7 +20,7 @@ Camera::Camera()
     p_aspect_ = 1;
 
     z_near_ = 0.1;
-    z_far_ = 2000;
+    z_far_ = 5;
 }
 
 void Camera::setPerpective(double fovy, double aspect)

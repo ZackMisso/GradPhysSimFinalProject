@@ -2,14 +2,17 @@
 #include "controller.h"
 #include <iostream>
 #include <QMouseEvent>
+#include "hairinstance.h"
+#include "simulation.h"
 
 using namespace std;
+using namespace Eigen;
 
 GLPanel::GLPanel(QWidget *parent) :
     QGLWidget(parent)
 {
     cont_ = NULL;
-    is3D = false;
+    is3D = true;
 }
 
 void GLPanel::setController(Controller *cont)
@@ -23,6 +26,7 @@ void GLPanel::resizeGL(int w, int h)
     {
         c_.setPerpective(60.0, 1.0);
         c_.setViewport(w, h);
+        // c_.setViewport(2.0, 2.0);
     }
     else
     {
@@ -43,7 +47,57 @@ void GLPanel::paintGL()
 {
     if (is3D)
     {
-        // to be implemented
+        assert(cont_);
+        glClearColor(1.0, 1.0, 1.0, 1.0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glColor3f(0.0, 0.0, 0.0);
+
+        c_.applyViewport();
+        c_.applyProjection();
+
+        // Vector3d eye = Vector3d(sin(cont_->getSim()->getTime() / 100.0), 0, cos(cont_->getSim()->getTime() / 100.0));
+        
+        Vector3d eye = Vector3d(0.0, 0.0, 1.0);
+
+        double scale = 1.0;
+        cont_->getCameraInfo(cameraView_, eye, scale);
+
+        eye *= scale;
+
+        double dz = exp(scale_);
+
+        // eye[2] = dz;
+        c_.setEye(eye);
+        eye[2] -= 1.0;
+        // c_.setCenter(eye);
+        c_.setCenter(Vector3d(0.0, 0.0, 0.0));
+        Vector3d up(0,1,0);
+        c_.setUp(up);
+
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+        c_.applyLookAt();
+        glScaled(scale,scale,scale);
+
+        // GLfloat lightColor0[] = {1.f, 1.f, 1.f, 1.0f};
+        // GLfloat ambientColor0[] = {0.2f, 0.2f, 0.2f, 1.0f};
+        // GLfloat lightPosition[4] = { (float)lightPos_[0], (float)lightPos_[1], (float)lightPos_[2], (float)lightPos_[3] };
+        // glLightfv(GL_LIGHT0, GL_AMBIENT, ambientColor0);
+        // glLightfv(GL_LIGHT0, GL_DIFFUSE, lightColor0);
+        // glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
+        // glLightf( GL_LIGHT0, GL_CONSTANT_ATTENUATION, 1.0f );
+        // glLightf( GL_LIGHT0, GL_LINEAR_ATTENUATION , 0.0f );
+        // glLightf( GL_LIGHT0, GL_QUADRATIC_ATTENUATION , 0.0f );
+        // glEnable(GL_LIGHTING);
+        // glEnable(GL_LIGHT0);
+
+        // cout << "EYE" << endl;
+        // cout << c_.getEye() << endl;
+
+        // cout << "View Center" << endl;
+        // cout << c_.getCenter() << endl;
+
+        cont_->render(is3D);
     }
     else
     {

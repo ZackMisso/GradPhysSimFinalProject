@@ -4,6 +4,7 @@
 #include "simparameters.h"
 #include <QThread>
 #include <QTimer>
+#include <Eigen/Core>
 
 class MainWindow;
 class Simulation;
@@ -17,6 +18,9 @@ public:
     virtual ~Controller();
     void initialize(MainWindow *mw);
     void render(bool is3D);
+    void getCameraInfo(int hair, Eigen::Vector3d &center, double &scale);
+
+    Simulation* getSim() { return sim_; }
 
 public slots:
     void reset();

@@ -24,12 +24,15 @@ public:
     void render(bool is3D);
     void clearScene();
 
+    std::vector<HairInstance*> hairs_;
+
+    double getTime() { return time_; };
+
 private:
     const SimParameters &params_;
     QMutex renderLock_;
 
     double time_;
-    std::vector<HairInstance*> hairs_;
 
     void buildConfiguration(Eigen::VectorXd &q, Eigen::VectorXd &qprev, Eigen::VectorXd &v);
     void unbuildConfiguration(const Eigen::VectorXd &q, const Eigen::VectorXd &v);

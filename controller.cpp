@@ -1,6 +1,7 @@
 #include "controller.h"
 #include "mainwindow.h"
 #include "simulation.h"
+#include "hairinstance.h"
 #include <QDebug>
 
 Controller::Controller(int fps) : QThread(), mw_(NULL), fps_(fps)
@@ -68,4 +69,12 @@ void Controller::simTick()
 {
     if(params_.simRunning)
         sim_->takeSimulationStep();
+}
+
+void Controller::getCameraInfo(int hair, Eigen::Vector3d &center, double &scale)
+{
+    // FIX LATER
+
+    // center = sim_->hairs_[0]->pos_;
+    scale = 1.0;
 }

@@ -8,7 +8,7 @@ using namespace Eigen;
 
 HairInstance::HairInstance()
 {
-    initializeLine(5, 2);
+    initializeLine(100, 2);
 }
 
 HairInstance::HairInstance(const Eigen::MatrixX3d &pos)
@@ -34,9 +34,9 @@ void HairInstance::initializeLine(int eps, int nos)
     // hardcoded stuff
     length_ = 1.0;
     lengthPerSegment_ = 0.5;
-    lengthPerEdge_ = 0.1;
+    lengthPerEdge_ = 0.005;
 
-    color_ = Vector3d(0.0, 1.0, 0.0);
+    color_ = Vector3d(0.74, 0.19, 0.19);
 
     template_verts_.resize(eps * nos + 1, 3);
     int index = 0;
@@ -173,6 +173,8 @@ void HairInstance::reconstructHair()
     {
         Vector3d one = verts_.row(i-1);
         Vector3d two = verts_.row(i);
+
+        // cout << "NORM: " << (one-two).norm() << endl;
     }
 }
 
@@ -308,11 +310,55 @@ void HairInstance::render2D(double scale)
 
 void HairInstance::render3D(double scale, double radius)
 {
-    // to be implemented
+    // cout << "PAINTING" << endl;
+
+    // glShadeModel(GL_FLAT);
+    // glEnable(GL_LIGHTING);
+    // glColorMaterial ( GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE );
+    // glEnable ( GL_COLOR_MATERIAL );
+    // glEnable( GL_NORMALIZE);
+    glColor4d(color_[0], color_[1], color_[2], 1.0);
+
+    glLineWidth(2.0);
+    // glColor3f(color_[0], color_[1], color_[2]);
+
+    glBegin(GL_LINES);
+    for (int i = 0; i < verts_.rows()-1; i++)
+    {
+        glVertex3d(verts_(i, 0), verts_(i, 1), verts_(i, 2));
+        glVertex3d(verts_(i + 1, 0), verts_(i + 1, 1), verts_(i + 1, 2));
+    }
+    glEnd();
+
+    // first segment points
+    // glColor3f(1.0, 0.0, 0.0);
+    // glPointSize(4.0);
+    // glBegin(GL_POINTS);
+    // for (int i = 0; i < verts_.rows() / 2; i++)
+    // {
+    //     glVertex3d(verts_(i, 0), verts_(i, 1), verts_(i, 2));
+    // }
+    // glEnd();
+
+    // second segment points
+    // glColor3f(0.0, 0.0, 1.0);
+    // glPointSize(4.0);
+    // glBegin(GL_POINTS);
+    // for (int i = verts_.rows() / 2; i < verts_.rows(); i++)
+    // {
+    //     glVertex3d(verts_(i, 0), verts_(i, 1), verts_(i, 2));
+    // }
+
+    // test
+    // glVertex3d(100, 100, 0.0);
+    // glVertex3d(50, 50, 0.0);
+    // glVertex3d(20, 20, 0.0);
+    // glVertex3d(10, 10, 0.0);
+    glEnd();
 }
 
 int HairInstance::getNumberOfDofs()
 {
     // maybe do more stuff here later
-    return curvatures_.rows();
+    return curvatures_.rows() * 3;
 }
