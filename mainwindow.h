@@ -47,57 +47,57 @@ private slots:
 
     void on_newtonMaxItersEdit_editingFinished();
 
-    void on_gravityCheckBox_clicked();
+    // void on_gravityCheckBox_clicked();
 
-    void on_springsCheckBox_clicked();
+    // void on_springsCheckBox_clicked();
 
-    void on_floorCheckBox_clicked();
+    // void on_floorCheckBox_clicked();
 
-    void on_dampingStiffnessCheckBox_clicked();
+    // void on_dampingStiffnessCheckBox_clicked();
 
-    void on_gravityGEdit_editingFinished();
+    // void on_gravityGEdit_editingFinished();
 
-    void on_springStiffnessEdit_editingFinished();
+    // void on_springStiffnessEdit_editingFinished();
 
-    void on_maxStrainEdit_editingFinished();
+    // void on_maxStrainEdit_editingFinished();
 
-    void on_dampingStiffnessEdit_editingFinished();
+    // void on_dampingStiffnessEdit_editingFinished();
 
-    void on_addParticleButton_clicked();
+    // void on_addParticleButton_clicked();
 
-    void on_addSawButton_clicked();
+    // void on_addSawButton_clicked();
 
-    void on_massEdit_editingFinished();
+    // void on_massEdit_editingFinished();
 
-    void on_maxSpringDistEdit_editingFinished();
+    // void on_maxSpringDistEdit_editingFinished();
 
-    void on_isFixedCheckBox_clicked();
+    // void on_isFixedCheckBox_clicked();
 
-    void on_radiusEdit_editingFinished();
+    // void on_radiusEdit_editingFinished();
 
-    void on_penaltyForceButton_clicked();
+    // void on_penaltyForceButton_clicked();
 
-    void on_stepAndProjectButton_clicked();
+    // void on_stepAndProjectButton_clicked();
 
-    void on_lagrangeMultiplierButton_clicked();
+    // void on_lagrangeMultiplierButton_clicked();
 
-    void on_penaltyStiffnessEdit_editingFinished();
+    // void on_penaltyStiffnessEdit_editingFinished();
 
-    void on_elasticBendingCheckBox_clicked();
+    // void on_elasticBendingCheckBox_clicked();
 
-    void on_densityEdit_editingFinished();
+    // void on_densityEdit_editingFinished();
 
-    void on_stretchKEdit_editingFinished();
+    // void on_stretchKEdit_editingFinished();
 
-    void on_bendKEdit_editingFinished();
+    // void on_bendKEdit_editingFinished();
 
-    void on_segmentsEdit_editingFinished();
+    // void on_segmentsEdit_editingFinished();
 
-    void on_springButton_clicked();
+    // void on_springButton_clicked();
 
-    void on_rigidRodButton_clicked();
+    // void on_rigidRodButton_clicked();
 
-    void on_flexibleRodButton_clicked();
+    // void on_flexibleRodButton_clicked();
 
 private:
     Controller &cont_;

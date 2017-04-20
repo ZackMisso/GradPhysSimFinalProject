@@ -173,27 +173,34 @@ void Simulation::unbuildConfiguration(const VectorXd &q, const VectorXd &v)
 
     // cout << q << endl;
 
-    for (int i = 0; i < ndofs / 3; i++)
-    {
-        for (int j = 0; j < hairs_[i]->getNumberOfSegments(); j++)
+    // cout << "NDOFS: " << ndofs << endl;
+
+    // for (int i = 0; i < ndofs / 3; i++)
+    // {
+        for (int j = 0; j < hairs_[0]->getNumberOfSegments(); j++)
         {
+            // FIX LATER
             // cout << "SETTING" << endl;
             // cout << "SEGMENTS:L " << hairs_[i]->getNumberOfSegments() << endl;
-            hairs_[i]->prev_curvatures_(j, 0) = hairs_[j]->curvatures_(j, 0);
-            hairs_[i]->prev_curvatures_(j, 1) = hairs_[j]->curvatures_(j, 1);
-            hairs_[i]->prev_curvatures_(j, 2) = hairs_[j]->curvatures_(j, 2);
-
-            hairs_[i]->curvatures_(j, 0) = q(j * 3);
-            hairs_[i]->curvatures_(j, 1) = q(j * 3 + 1);
-            hairs_[i]->curvatures_(j, 2) = q(j * 3 + 2);
-
-            hairs_[i]->curvatures_dot_(j, 0) = v(j * 3);
-            hairs_[i]->curvatures_dot_(j, 1) = v(j * 3 + 1);
-            hairs_[i]->curvatures_dot_(j, 1) = v(j * 3 + 2);
+            // cout << "ONE" << endl;
+            // cout << "ROWS: " << hairs_[0]->prev_curvatures_.rows() << endl;
+            // cout << "CURVE ROWS: " << hairs_[0]->curvatures_.rows() << endl;
+            // cout << "HAIRS SIZE: " << hairs_.size() << endl;
+            hairs_[0]->prev_curvatures_(j, 0) = hairs_[0]->curvatures_(j, 0);
+            hairs_[0]->prev_curvatures_(j, 1) = hairs_[0]->curvatures_(j, 1);
+            hairs_[0]->prev_curvatures_(j, 2) = hairs_[0]->curvatures_(j, 2);
+            // cout << "TWO" << endl;
+            hairs_[0]->curvatures_(j, 0) = q(j * 3);
+            hairs_[0]->curvatures_(j, 1) = q(j * 3 + 1);
+            hairs_[0]->curvatures_(j, 2) = q(j * 3 + 2);
+            // cout << "THREE" << endl;
+            hairs_[0]->curvatures_dot_(j, 0) = v(j * 3);
+            hairs_[0]->curvatures_dot_(j, 1) = v(j * 3 + 1);
+            hairs_[0]->curvatures_dot_(j, 1) = v(j * 3 + 2);
 
             // i++;
         }
-    }
+    // }
 }
 
 void Simulation::computeForceAndHessian(const VectorXd &q, const VectorXd &qprev, Eigen::VectorXd &F, SparseMatrix<double> &H)

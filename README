@@ -1,0 +1,37 @@
+Milestone 1 Submission
+
+Sumit Sinha
+Zack Misso
+
+Our Project: Psuedo-Realistic Hair Simulation
+
+What we claimed to have finished:
+
+Solve the equations of motion for hair segments
+Implement Hair Reconstruction from the curvatures of hair segments
+Implement the equations of motion
+
+What we did:
+
+We worked towards implementing a hair simulation based off of the Super Helices paper.
+The paper claimed to represent hair as a collection of super helic segments.
+Every segment can have a different, but constant, curvature. This allows a hair sim
+to represent the DoF of a system of hair strands as the curvatures of the individual
+segments of hair. A single strand of hair can have multiple segments so the total
+number of DoFs is 3n where n is the number of segments.
+
+We derived the equations of motion of hair segments in terms of their curvatures.
+Those calculations are in the pdf attached to this submission.
+
+We implemented reconstruction of a hair strand based off of the curvatures of its
+segments.
+
+We implemented a visual representation of our reconstruction and hair dynamics. We
+have not yet implemented the equations of motion in code. The hair strand that can
+be seen in the simulation contains two segments. Each segment's curvatures are
+varied with respect to time based on arbitrary functions of our choosing for demo
+purposes.
+
+Every time step the curvatures are updated and the hair strand is reconstructed.
+
+To compile and run the code: qmake && make clean && make && ./goo
