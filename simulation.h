@@ -21,7 +21,7 @@ public:
     void addSaw(double x, double y);
 
     void takeSimulationStep();
-    void render();
+    void render(bool is3D);
     void clearScene();
 
 private:

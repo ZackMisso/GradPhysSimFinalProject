@@ -17,6 +17,7 @@ void Controller::initialize(MainWindow *mw)
 {
     mw_ = mw;
     sim_ = new Simulation(params_);
+    // sim_->initializeGL();
 }
 
 void Controller::run()
@@ -45,9 +46,9 @@ void Controller::updateParameters(SimParameters params)
     params_ = params;
 }
 
-void Controller::render()
+void Controller::render(bool is3D)
 {
-    sim_->render();
+    sim_->render(is3D);
 }
 
 void Controller::mouseClicked(double x, double y)

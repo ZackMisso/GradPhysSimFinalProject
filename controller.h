@@ -16,7 +16,7 @@ public:
     Controller(int fps);
     virtual ~Controller();
     void initialize(MainWindow *mw);
-    void render();
+    void render(bool is3D);
 
 public slots:
     void reset();

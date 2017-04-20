@@ -15,7 +15,7 @@ Simulation::Simulation(const SimParameters &params) : params_(params), time_(0)
     clearScene();
 }
 
-void Simulation::render()
+void Simulation::render(bool is3D)
 {
     // cout << "In Render" << endl;
     // glLineWidth(2.0);
@@ -23,9 +23,15 @@ void Simulation::render()
     {
         for (int i = 0; i < hairs_.size(); i++)
         {
-            // cout << ""
-            hairs_[i]->render2D(params_.artificialScale);
-            // hairs_[i]->render();
+            if (is3D)
+            {
+                // replace with actual radius later
+                hairs_[i]->render3D(params_.artificialScale, 1.0);
+            }
+            else
+            {
+                hairs_[i]->render2D(params_.artificialScale);
+            }
         }
         renderLock_.unlock();
     }
