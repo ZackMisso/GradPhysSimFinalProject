@@ -36,11 +36,7 @@ void HairInstance::initializeLine(int eps, int nos)
     lengthPerSegment_ = 0.5;
     lengthPerEdge_ = 0.1;
 
-    cout << "WHAT" << endl;
-
     color_ = Vector3d(0.0, 1.0, 0.0);
-
-    cout << "SIZE: " << eps * nos + 1 << endl;
 
     template_verts_.resize(eps * nos + 1, 3);
     int index = 0;
@@ -58,7 +54,8 @@ void HairInstance::initializeLine(int eps, int nos)
 
     verts_.resize(template_verts_.rows(), 3);
     verts_ = template_verts_;
-    //
+
+    // maybe use later ?
     // verts_dot.resize(template_verts_.size());
     // verts_dot.setZero();
 
@@ -88,6 +85,7 @@ void HairInstance::initializeLine(int eps, int nos)
 
     reconstructHair();
 
+    // use these for milestone 2
     // computeLength();
     // computeNormals();
     // computeSegments();
@@ -122,18 +120,12 @@ void HairInstance::reconstructHair()
     // L is in terms of the segment
     // s is distance between 0 and L for segment
 
-    // cout << "Reconstructing Hair" << endl;
-
     Vector3d lastPos = pos_;
     verts_.row(0) = lastPos;
-
-    cout << "Pos: " << lastPos << endl;
 
     Vector3d n0 = normals_.row(0);
     Vector3d n1 = normals_.row(1);
     Vector3d n2 = normals_.row(2);
-
-    // cout << "Finished Setting Initial Conditions" << endl;
 
     Vector3d initialDarboux;
     double darbouxNorm;
@@ -143,10 +135,8 @@ void HairInstance::reconstructHair()
     {
         Vector3d curvature = curvatures_.row(i);
 
-        // will need for more than one strand
         if (i != 0)
         {
-            cout << "NORMING" << endl;
             n0 = calculateNi(n0, n1, n2, omega, i, lengthPerSegment_, darbouxNorm, 0);
             n1 = calculateNi(n0, n1, n2, omega, i, lengthPerSegment_, darbouxNorm, 1);
             n2 = calculateNi(n0, n1, n2, omega, i, lengthPerSegment_, darbouxNorm, 2);
@@ -156,39 +146,24 @@ void HairInstance::reconstructHair()
         darbouxNorm = initialDarboux.norm();
         omega = initialDarboux / darbouxNorm;
 
-        // cout << "Calculated Constants" << endl;
-
         Vector3d nextPos;
 
         for (int j = 0; j < edgesPerSegment_; j++)
         {
-            // cout << "Getting N0" << endl;
             double s = lengthPerEdge_*(j+1);
-            //Vector3d currentN0 = calculateNi(n0, n1, n2, omega, i, s, darbouxNorm, 0);
             Vector3d currentN0 = n0;
 
-            // cout << "Calculating r Constants" << endl;
             Vector3d par = para(currentN0, omega);
             Vector3d per = perp(currentN0, omega);
-            // cout << "PAR NORM: " << par.norm() << endl;
-            // cout << "PER NORM: " << per.norm() << endl;
             Vector3d cros = omega.cross(per);
 
-            // cout << "Getting All of the Terms" << endl;
             Vector3d firstTerm = lastPos;
             Vector3d secondTerm = par * s;
             Vector3d thirdTerm = per * ( sin(darbouxNorm * s) / darbouxNorm );
             Vector3d fourthTerm = cros * ( ( 1 - cos(darbouxNorm * s) ) / darbouxNorm );
             nextPos = firstTerm + secondTerm + thirdTerm + fourthTerm;
 
-            // cout << "Final Set" << endl;
-            // cout << "Vert: " << i * edgesPerSegment_ + j + 1 << endl;
-            cout << nextPos[0] << " " << nextPos[1] << " " << nextPos[2] << endl;
-            cout << endl;
-            // if (i * edgesPerSegment_ + j != 0)
-            // {
             verts_.row(i * edgesPerSegment_ + j + 1) = nextPos;
-            // }
         }
 
         lastPos = nextPos;
@@ -198,8 +173,6 @@ void HairInstance::reconstructHair()
     {
         Vector3d one = verts_.row(i-1);
         Vector3d two = verts_.row(i);
-
-        cout << "NORM: " << i-1 << "," << i << " " << (one-two).norm() << endl;
     }
 }
 
@@ -214,7 +187,7 @@ Vector3d HairInstance::calculateNi(Vector3d n0, Vector3d n1, Vector3d n2, Vector
         Vector3d firstTerm = par;
         Vector3d secondTerm = per * cos(darbouxNorm * s);
         Vector3d thirdTerm = cros * sin(darbouxNorm * s);
-        // cout << "NNORM: " << (firstTerm + secondTerm + thirdTerm).norm() << endl;
+
         return firstTerm + secondTerm + thirdTerm;
     }
 
@@ -227,7 +200,7 @@ Vector3d HairInstance::calculateNi(Vector3d n0, Vector3d n1, Vector3d n2, Vector
         Vector3d firstTerm = par;
         Vector3d secondTerm = per * cos(darbouxNorm * s);
         Vector3d thirdTerm = cros * sin(darbouxNorm * s);
-        // cout << "NNORM: " << (firstTerm + secondTerm + thirdTerm).norm() << endl;
+
         return firstTerm + secondTerm + thirdTerm;
     }
 
@@ -240,7 +213,7 @@ Vector3d HairInstance::calculateNi(Vector3d n0, Vector3d n1, Vector3d n2, Vector
         Vector3d firstTerm = par;
         Vector3d secondTerm = per * cos(darbouxNorm * s);
         Vector3d thirdTerm = cros * sin(darbouxNorm * s);
-        // cout << "NNORM: " << (firstTerm + secondTerm + thirdTerm).norm() << endl;
+
         return firstTerm + secondTerm + thirdTerm;
     }
 
@@ -256,41 +229,42 @@ Vector3d HairInstance::perp(Vector3d vec, Vector3d omega)
     return vec - para(vec, omega);
 }
 
-// simple
+// will be needed for milestone 2
 void HairInstance::computeLength()
 {
-    length_ = 0.0;
-
-    for (int i = 0; i < template_verts_.rows() - 1; i++)
-    {
-        Vector3d one = template_verts_.row(i);
-        Vector3d two = template_verts_.row(i+1);
-
-        length_ += (one-two).norm();
-    }
+    // length_ = 0.0;
+    //
+    // for (int i = 0; i < template_verts_.rows() - 1; i++)
+    // {
+    //     Vector3d one = template_verts_.row(i);
+    //     Vector3d two = template_verts_.row(i+1);
+    //
+    //     length_ += (one-two).norm();
+    // }
 }
 
 void HairInstance::computeSegments()
 {
     // this really is not needed for the first milestone
-    assert(edgesPerSegment_ == normals_.size() / numberOfSegments_);
 
-    int currentIndex = 0;
-
-    for (int i = 0; i < numberOfSegments_; i++)
-    {
-        MatrixX3d segment;
-        segment.resize(edgesPerSegment_, 3);
-
-        for (int j = 0; j < edgesPerSegment_; j++)
-        {
-            segment.row(j) = template_verts_.row(currentIndex);
-            currentIndex++;
-        }
-    }
+    // assert(edgesPerSegment_ == normals_.size() / numberOfSegments_);
+    //
+    // int currentIndex = 0;
+    //
+    // for (int i = 0; i < numberOfSegments_; i++)
+    // {
+    //     MatrixX3d segment;
+    //     segment.resize(edgesPerSegment_, 3);
+    //
+    //     for (int j = 0; j < edgesPerSegment_; j++)
+    //     {
+    //         segment.row(j) = template_verts_.row(currentIndex);
+    //         currentIndex++;
+    //     }
+    // }
 }
 
-// hardcode for now, fix later
+// hardcode for now, use for milestone 2
 void HairInstance::computeNormals()
 {
     // normals_.resize(template_verts_.size() - 1);
@@ -303,20 +277,15 @@ void HairInstance::computeNormals()
 
 void HairInstance::render(double scale)
 {
-    // cout << "In Render Hair" << endl;
     glLineWidth(2.0);
     glColor3f(color_[0], color_[1], color_[2]);
-
-    // cout << "Rows " << verts_.rows() << endl;
 
     glBegin(GL_LINES);
     for (int i = 0; i < verts_.rows()-1; i++)
     {
         glVertex3d(verts_(i, 0), verts_(i, 1), verts_(i, 2));
         glVertex3d(verts_(i + 1, 0), verts_(i + 1, 1), verts_(i + 1, 2));
-        // cout << "CALLED" << endl;
     }
-    // cout << "END" << endl;
     glEnd();
 
     glColor3f(1.0, 0.0, 0.0);
