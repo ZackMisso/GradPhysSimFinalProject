@@ -168,14 +168,6 @@ void HairInstance::reconstructHair()
 
         lastPos = nextPos;
     }
-
-    for (int i = 1; i < verts_.rows(); i++)
-    {
-        Vector3d one = verts_.row(i-1);
-        Vector3d two = verts_.row(i);
-
-        // cout << "NORM: " << (one-two).norm() << endl;
-    }
 }
 
 Vector3d HairInstance::calculateNi(Vector3d n0, Vector3d n1, Vector3d n2, Vector3d omega, int segment, double s, double darbouxNorm, int i)
@@ -310,8 +302,6 @@ void HairInstance::render2D(double scale)
 
 void HairInstance::render3D(double scale, double radius)
 {
-    // cout << "PAINTING" << endl;
-
     // glShadeModel(GL_FLAT);
     // glEnable(GL_LIGHTING);
     // glColorMaterial ( GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE );

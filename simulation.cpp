@@ -17,8 +17,6 @@ Simulation::Simulation(const SimParameters &params) : params_(params), time_(0)
 
 void Simulation::render(bool is3D)
 {
-    // cout << "In Render" << endl;
-    // glLineWidth(2.0);
     if (renderLock_.tryLock())
     {
         for (int i = 0; i < hairs_.size(); i++)
@@ -41,9 +39,7 @@ void Simulation::takeSimulationStep()
 {
     VectorXd q, qprev, v;
 
-    // cout << "Before build" << endl;
     buildConfiguration(q, qprev, v);
-    // cout << "Setting Vals" << endl;
 
     q[0] = 4 * cos(time_ / 2.0 + 0.5);
     q[1] = 2 * sin(time_) - 3 * cos(time_);
@@ -54,9 +50,7 @@ void Simulation::takeSimulationStep()
     q[5] = 5 - 3 * sin(time_);
 
     // numericalIntegration(q, qprev, v);
-    // cout << "Unbuild" << endl;
     unbuildConfiguration(q, v);
-    // cout << "Reconstruct" << endl;
     reconstruction();
 
     time_ += params_.timeStep;
@@ -82,23 +76,7 @@ void Simulation::numericalIntegration(Eigen::VectorXd &q, Eigen::VectorXd &qprev
 
     VectorXd guess = q;
 
-    // THIS STUFF IS JUST COPIED AND PASTED. NOT ACTUALLY IN USE
-    for (int i = 0; i < params_.NewtonMaxIters; i++)
-    {
-        VectorXd fval = guess - q; // terms go here
-
-        if (fval.norm() < params_.NewtonTolerance)
-        {
-            SparseMatrix<double> I(q.size(), q.size());
-            I.setIdentity();
-            //SparseMatrix<double> Hf = I + params_.timeStep*params_.timeStep*Minv*H;
-            SparseMatrix<double> Hf = I + params_.timeStep * H; // terms go here
-            BiCGSTAB<SparseMatrix<double> > solver;
-            solver.compute(Hf);
-            VectorXd deltaguess = solver.solve(-fval);
-            guess += deltaguess;
-        }
-    }
+    // stuff could go here
 
     v = (guess - q) / params_.timeStep;
     q = guess;
@@ -115,7 +93,7 @@ void Simulation::reconstruction()
 void Simulation::addParticle(double x, double y)
 {
     renderLock_.lock();
-    cout << "X: " << x << " Y: " << y << endl;
+    // blah
     renderLock_.unlock();
 }
 
@@ -153,8 +131,6 @@ void Simulation::buildConfiguration(VectorXd &q, VectorXd &qprev, VectorXd &v)
         ndofs += hairs_[i]->getNumberOfDofs();
     }
 
-    // cout << "NDOFS" << 
-
     q.resize(ndofs);
     qprev.resize(ndofs);
     v.resize(ndofs);
@@ -171,36 +147,21 @@ void Simulation::unbuildConfiguration(const VectorXd &q, const VectorXd &v)
 {
     int ndofs = q.size();
 
-    // cout << q << endl;
+    for (int j = 0; j < hairs_[0]->getNumberOfSegments(); j++)
+    {
+        // FIX LATER
+        hairs_[0]->prev_curvatures_(j, 0) = hairs_[0]->curvatures_(j, 0);
+        hairs_[0]->prev_curvatures_(j, 1) = hairs_[0]->curvatures_(j, 1);
+        hairs_[0]->prev_curvatures_(j, 2) = hairs_[0]->curvatures_(j, 2);
 
-    // cout << "NDOFS: " << ndofs << endl;
+        hairs_[0]->curvatures_(j, 0) = q(j * 3);
+        hairs_[0]->curvatures_(j, 1) = q(j * 3 + 1);
+        hairs_[0]->curvatures_(j, 2) = q(j * 3 + 2);
 
-    // for (int i = 0; i < ndofs / 3; i++)
-    // {
-        for (int j = 0; j < hairs_[0]->getNumberOfSegments(); j++)
-        {
-            // FIX LATER
-            // cout << "SETTING" << endl;
-            // cout << "SEGMENTS:L " << hairs_[i]->getNumberOfSegments() << endl;
-            // cout << "ONE" << endl;
-            // cout << "ROWS: " << hairs_[0]->prev_curvatures_.rows() << endl;
-            // cout << "CURVE ROWS: " << hairs_[0]->curvatures_.rows() << endl;
-            // cout << "HAIRS SIZE: " << hairs_.size() << endl;
-            hairs_[0]->prev_curvatures_(j, 0) = hairs_[0]->curvatures_(j, 0);
-            hairs_[0]->prev_curvatures_(j, 1) = hairs_[0]->curvatures_(j, 1);
-            hairs_[0]->prev_curvatures_(j, 2) = hairs_[0]->curvatures_(j, 2);
-            // cout << "TWO" << endl;
-            hairs_[0]->curvatures_(j, 0) = q(j * 3);
-            hairs_[0]->curvatures_(j, 1) = q(j * 3 + 1);
-            hairs_[0]->curvatures_(j, 2) = q(j * 3 + 2);
-            // cout << "THREE" << endl;
-            hairs_[0]->curvatures_dot_(j, 0) = v(j * 3);
-            hairs_[0]->curvatures_dot_(j, 1) = v(j * 3 + 1);
-            hairs_[0]->curvatures_dot_(j, 1) = v(j * 3 + 2);
-
-            // i++;
-        }
-    // }
+        hairs_[0]->curvatures_dot_(j, 0) = v(j * 3);
+        hairs_[0]->curvatures_dot_(j, 1) = v(j * 3 + 1);
+        hairs_[0]->curvatures_dot_(j, 1) = v(j * 3 + 2);
+    }
 }
 
 void Simulation::computeForceAndHessian(const VectorXd &q, const VectorXd &qprev, Eigen::VectorXd &F, SparseMatrix<double> &H)
@@ -213,26 +174,7 @@ void Simulation::computeForceAndHessian(const VectorXd &q, const VectorXd &qprev
 
     vector<Tr> Hcoeffs;
 
-    if(params_.activeForces & SimParameters::F_GRAVITY)
-    {
-        // remap this functionality
-    }
-    if(params_.activeForces & SimParameters::F_SPRINGS)
-    {
-        // remap this functionality
-    }
-    if(params_.activeForces & SimParameters::F_DAMPING)
-    {
-        // remap this functionality
-    }
-    if(params_.activeForces & SimParameters::F_FLOOR)
-    {
-        // remap this functionality
-    }
-    if(params_.activeForces & SimParameters::F_BENDING)
-    {
-        // remap this functionality
-    }
+    // do stuffs
 
     H.setFromTriplets(Hcoeffs.begin(), Hcoeffs.end());
 }
