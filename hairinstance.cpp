@@ -13,7 +13,17 @@ HairInstance::HairInstance()
 
 HairInstance::HairInstance(const Eigen::MatrixX3d &pos)
 {
-    initializeFromPositions(pos, 10, 1);
+    initializeFromPositions(pos, 100, 2);
+}
+
+HairInstance::HairInstance(const Eigen::VectorXd &curves, Vector3d startPos, Matrix3d startNorm)
+{
+    initializeFromCurvatures(curves, 100, 2, 1.0, startPos, startNorm);
+}
+
+HairInstance::HairInstance(const Eigen::VectorXd &curves, Vector3d startPos, Matrix3d startNorm, int eps, int nos, double length)
+{
+    initializeFromCurvatures(curves, eps, nos, length, startPos, startNorm);
 }
 
 HairInstance::~HairInstance()
@@ -96,23 +106,60 @@ void HairInstance::initializeFromPositions(const MatrixX3d positions, int eps, i
     edgesPerSegment_ = eps;
     numberOfSegments_ = nos;
 
-    // to be implemented for milestone 2
+    // to be implemented for fast rendering
 
     computeLength();
     computeNormals();
     computeSegments();
 }
 
-void HairInstance::initializeFromCurvatures(const MatrixX3d curves, int eps, int nos, int length)
+void HairInstance::initializeFromCurvatures(const VectorXd curves, int eps, int nos, double length, Vector3d startPos, Matrix3d startNorm)
 {
     edgesPerSegment_ = eps;
     numberOfSegments_ = nos;
 
-    // to be implemented for milestone 2
+    length_ = length;
+    lengthPerSegment_ = length / nos;
+    lengthPerEdge_ = length / (eps * nos);
 
-    computeLength();
-    computeNormals();
-    computeSegments();
+    color_ = Vector3d(0.74, 0.19, 0.19);
+
+    template_verts_.resize(eps * nos + 1, 3);
+    template_verts_.setZero();
+
+    verts_.resize(template_verts_.rows(), 3);
+
+    initialCurvatures_.resize(numberOfSegments_ * 3);
+    initialCurvatures_.setZero();
+
+    initialCurvatures_ = curves;
+
+    curvatures_.resize(numberOfSegments_ * 3);
+    curvatures_.setZero();
+    curvatures_ = initialCurvatures_;
+
+    prev_curvatures_.resize(numberOfSegments_ * 3);
+    prev_curvatures_.setZero();
+    prev_curvatures_ = initialCurvatures_;
+
+    curvatures_dot_.resize(numberOfSegments_ * 3);
+    curvatures_dot_.setZero();
+
+    pos_ = startPos;
+
+    normals_ = startNorm;
+
+    reconstructHair();
+
+    for (int i = 0; i < verts_.rows(); i++)
+    {
+        template_verts_.row(i) = verts_.row(i);
+    }
+
+    // implement later maybe
+    // computeLength();
+    // computeNormals();
+    // computeSegments();
 }
 
 void HairInstance::reconstructHair()
