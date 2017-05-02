@@ -31,6 +31,18 @@ void Simulation::render(bool is3D)
                 hairs_[i]->render2D(params_.artificialScale);
             }
         }
+        for (int i = 0; i < interpHairs_.size(); i++)
+        {
+            if (is3D)
+            {
+                // replace with actual radius later
+                interpHairs_[i]->render3D(params_.artificialScale, 1.0);
+            }
+            else
+            {
+                interpHairs_[i]->render2D(params_.artificialScale);
+            }
+        }
         renderLock_.unlock();
     }
 }
@@ -52,6 +64,9 @@ void Simulation::takeSimulationStep()
     // numericalIntegration(q, qprev, v);
     unbuildConfiguration(q, v);
     reconstruction();
+
+    cleanInterpolations();
+    createInterpolations();
 
     time_ += params_.timeStep;
 }
@@ -182,4 +197,19 @@ void Simulation::computeForceAndHessian(const VectorXd &q, const VectorXd &qprev
 void Simulation::computeMassInverse(Eigen::SparseMatrix<double> &Minv)
 {
     // to be implemented, and renamed
+}
+
+void Simulation::cleanInterpolations()
+{
+    // to be implemented
+}
+
+void Simulation::createInterpolations()
+{
+    // to be implemented
+}
+
+void Simulation::bakeHairs()
+{
+    // to be implemented
 }

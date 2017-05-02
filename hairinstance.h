@@ -1,5 +1,6 @@
 #pragma once
 
+#include "bakedhair.h"
 #include <string>
 #include <Eigen/Core>
 #include <vector>
@@ -26,6 +27,12 @@ public:
     int getNumberOfDofs();
     int getNumberOfSegments() { return numberOfSegments_; }
 
+    void interpolateTwo(const HairInstance* one, const HairInstance* two, double alpha, double beta);
+    void interpolateThree(const HairInstance* one, const HairInstance* two, const HairInstance* three, double alpha, double beta, double gamma);
+    void interpolateTwo();
+    void interpolateThree();
+    void bake();
+
     // simulation info
     Eigen::Vector3d pos_; // location of first vert
     Eigen::VectorXd curvatures_;
@@ -46,6 +53,7 @@ private:
     void computeLength();
     void computeSegments();
     void computeNormals();
+    void preprocessRendering();
 
     Eigen::Vector3d para(Eigen::Vector3d vec, Eigen::Vector3d omega);
     Eigen::Vector3d perp(Eigen::Vector3d vec, Eigen::Vector3d omega);
@@ -53,6 +61,13 @@ private:
     Eigen::Vector3d calculateNi(Eigen::Vector3d n0, Eigen::Vector3d n1, Eigen::Vector3d n2, Eigen::Vector3d omega, int segment, double s, double darbouxNorm, int i);
 
     // render info
+    BakedHair* bakedVersion;
+    HairInstance* guideOne;
+    HairInstance* guideTwo;
+    HairInstance* guideThree;
+    double baryOne;
+    double baryTwo;
+    double baryThree;
     Eigen::Vector3d color_;
     int index_; // use in milestone 2
 

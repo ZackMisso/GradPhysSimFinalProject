@@ -399,3 +399,86 @@ int HairInstance::getNumberOfDofs()
     // maybe do more stuff here later
     return curvatures_.rows() * 3;
 }
+
+void HairInstance::preprocessRendering()
+{
+    // to be implemented
+}
+
+void HairInstance::interpolateTwo(const HairInstance* one, const HairInstance* two, double alpha, double beta)
+{
+    HairInstance* oldOne = guideOne;
+    HairInstance* oldTwo = guideTwo;
+    double oldBaryOne = baryOne;
+    double oldBaryTwo = baryTwo;
+
+    guideOne = one;
+    guideTwo = two;
+    baryOne = alpha;
+    baryTwo = beta;
+
+    interpolateTwo();
+
+    guideOne = oldOne;
+    guideTwo = oldTwo;
+    baryOne = oldBaryOne;
+    baryTwo = oldBaryTwo;
+}
+
+void HairInstance::interpolateThree(const HairInstance* one, const HairInstance* two, const HairInstance* three, double alpha, double beta, double gamma)
+{
+    HairInstance* oldOne = guideOne;
+    HairInstance* oldTwo = guideTwo;
+    HairInstance* oldThree = guideThree;
+    double oldBaryOne = baryOne;
+    double oldBaryTwo = baryTwo;
+    double oldBaryThree = baryThree;
+
+    guideOne = one;
+    guideTwo = two;
+    guideThree = three;
+    baryOne = alpha;
+    baryTwo = beta;
+    baryThree = gamma;
+
+    interpolateThree();
+
+    guideOne = oldOne;
+    guideTwo = oldTwo;
+    guideThree = oldThree;
+    baryOne = oldBaryOne;
+    baryTwo = oldBaryTwo;
+    baryThree = oldBaryThree;
+}
+
+void HairInstance::interpolateTwo()
+{
+    assert(guideOne->verts_.rows() == guideTwo->verts_.rows())
+    assert(baryOne + baryTwo == 1.0)
+
+    for (int i = 0; i < guideOne->verts_.rows(); i++)
+    {
+        Vector3d newVert;
+        newVert.setZero();
+        
+        newVert = baryOne * guideOne->verts_.row(i) + baryTwo * guideTwo->verts_.row(i);
+
+        verts_.row(i) = newVert;
+    }
+}
+
+void HairInstance::interpolateThree()
+{
+    assert(guideOne->verts_.rows() == guideTwo->verts.rows() && guideOne->verts_.rows() == guideThree->verts_.rows())
+    assert(baryOne + baryTwo + baryThree == 1.0)
+
+    for (int i = 0; i < guideOne->verts_.rows(); i++)
+    {
+        Vector3d newVert;
+        newVert.setZero();
+
+        newVert = baryOne * guideOne->verts_.row(i) + baryTwo * guideTwo->verts_.row(i) + baryThree * guideThree->verts_.row(i);
+
+        verts_.row(i) = newVert;
+    }
+}

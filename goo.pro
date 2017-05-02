@@ -30,7 +30,8 @@ SOURCES += main.cpp\
     simparameters.cpp \
     camera.cpp \
     vectormath.cpp \
-    hairinstance.cpp
+    hairinstance.cpp \
+    bakedhair.cpp
 
 HEADERS  += mainwindow.h \
     glpanel.h \
@@ -39,7 +40,8 @@ HEADERS  += mainwindow.h \
     simparameters.h \
     camera.h \
     vectormath.h \
-    hairinstance.h
+    hairinstance.h \
+    hairbaked.h
 
 FORMS    += mainwindow.ui
 

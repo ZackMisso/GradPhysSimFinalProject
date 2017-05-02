@@ -25,6 +25,7 @@ public:
     void clearScene();
 
     std::vector<HairInstance*> hairs_;
+    std::vector<HairInstance*> interpHairs_;
 
     double getTime() { return time_; };
 
@@ -40,6 +41,10 @@ private:
     void computeForceAndHessian(const Eigen::VectorXd &q, const Eigen::VectorXd &qprev, Eigen::VectorXd &F, Eigen::SparseMatrix<double> &H);
 
     void computeMassInverse(Eigen::SparseMatrix<double> &Minv);
+    void createInterpolations();
+    void cleanInterpolations();
+
+    void bakeHairs();
 
     void numericalIntegration(Eigen::VectorXd &q, Eigen::VectorXd &qprev, Eigen::VectorXd &v);
     void reconstruction();
