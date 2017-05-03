@@ -41,7 +41,7 @@ HEADERS  += mainwindow.h \
     camera.h \
     vectormath.h \
     hairinstance.h \
-    hairbaked.h
+    bakedhair.h
 
 FORMS    += mainwindow.ui
 

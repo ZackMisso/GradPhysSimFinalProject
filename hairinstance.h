@@ -24,11 +24,14 @@ public:
 
     void reconstructHair();
 
-    int getNumberOfDofs();
-    int getNumberOfSegments() { return numberOfSegments_; }
+    int getNumberOfDofs() const;
+    int getNumberOfSegments() const { return numberOfSegments_; }
 
-    void interpolateTwo(const HairInstance* one, const HairInstance* two, double alpha, double beta);
-    void interpolateThree(const HairInstance* one, const HairInstance* two, const HairInstance* three, double alpha, double beta, double gamma);
+    void buildConfiguration(Eigen::VectorXd &q, Eigen::VectorXd &qprev, Eigen::VectorXd &v, int &index);
+    void unbuildConfiguration(const Eigen::VectorXd &q, const Eigen::VectorXd &v, int &index);
+
+    void interpolateTwo(HairInstance* one, HairInstance* two, double alpha, double beta);
+    void interpolateThree(HairInstance* one, HairInstance* two, HairInstance* three, double alpha, double beta, double gamma);
     void interpolateTwo();
     void interpolateThree();
     void bake();

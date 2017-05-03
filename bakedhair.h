@@ -18,5 +18,5 @@ public:
     std::vector<Eigen::VectorXd> curves;
 
     void readPositionsFromLine(std::string line);
-    str::string writePositionsToLine();
+    std::string writePositionsToLine();
 };

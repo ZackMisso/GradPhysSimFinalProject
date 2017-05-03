@@ -8,21 +8,25 @@ using namespace Eigen;
 
 HairInstance::HairInstance()
 {
+    cout << "Initializing From Nothing" << endl;
     initializeLine(100, 2);
 }
 
 HairInstance::HairInstance(const Eigen::MatrixX3d &pos)
 {
+    cout << "Initializing from Positions" << endl;
     initializeFromPositions(pos, 100, 2);
 }
 
 HairInstance::HairInstance(const Eigen::VectorXd &curves, Vector3d startPos, Matrix3d startNorm)
 {
+    cout << "Initializing from default curvatures" << endl;
     initializeFromCurvatures(curves, 100, 2, 1.0, startPos, startNorm);
 }
 
 HairInstance::HairInstance(const Eigen::VectorXd &curves, Vector3d startPos, Matrix3d startNorm, int eps, int nos, double length)
 {
+    cout << "Initializing from custom curvatures" << endl;
     initializeFromCurvatures(curves, eps, nos, length, startPos, startNorm);
 }
 
@@ -38,6 +42,7 @@ HairInstance::HairInstance(const HairInstance& other)
 
 void HairInstance::initializeLine(int eps, int nos)
 {
+    // cout << "Hello" << endl;
     edgesPerSegment_ = eps;
     numberOfSegments_ = nos;
 
@@ -48,7 +53,9 @@ void HairInstance::initializeLine(int eps, int nos)
 
     color_ = Vector3d(0.74, 0.19, 0.19);
 
-    template_verts_.resize(eps * nos + 1, 3);
+    // cout << "Hello" << endl;
+
+    template_verts_.resize((eps * nos + 1), 3);
     int index = 0;
 
     for (double i = -0.5; i <= 0.5; i += 1.0 / (eps * nos))
@@ -60,40 +67,57 @@ void HairInstance::initializeLine(int eps, int nos)
         index++;
     }
 
+    // cout << "Hello" << endl;
+
     cout << template_verts_.rows() << endl;
 
     verts_.resize(template_verts_.rows(), 3);
     verts_ = template_verts_;
 
+    // cout << "Hello" << endl;
+
     // maybe use later ?
     // verts_dot.resize(template_verts_.size());
     // verts_dot.setZero();
 
-    initialCurvatures_.resize(numberOfSegments_, 3);
+    initialCurvatures_.resize(numberOfSegments_ * 3);
     initialCurvatures_.setZero();
 
-    initialCurvatures_.row(0) = Vector3d(0.0, 0.0, 1.0);
-    initialCurvatures_.row(1) = Vector3d(0.0, 0.0, -2.0);
+    // cout << "Hello" << endl;
 
-    curvatures_.resize(numberOfSegments_, 3);
+    initialCurvatures_.segment<3>(0) = Vector3d(0.0, 0.0, 1.0);
+    initialCurvatures_.segment<3>(3) = Vector3d(0.0, 0.0, -2.0);
+
+    curvatures_.resize(numberOfSegments_ * 3);
     curvatures_.setZero();
     curvatures_ = initialCurvatures_;
 
-    prev_curvatures_.resize(numberOfSegments_, 3);
+    // cout << "Hello" << endl;
+
+    prev_curvatures_.resize(numberOfSegments_ * 3);
     prev_curvatures_.setZero();
     prev_curvatures_ = initialCurvatures_;
 
-    curvatures_dot_.resize(numberOfSegments_, 3);
+    // cout << "Hello" << endl;
+
+    curvatures_dot_.resize(numberOfSegments_ * 3);
     curvatures_dot_.setZero();
+
+    // cout << "Hello" << endl;
 
     pos_ = template_verts_.row(0);
 
-    normals_.resize(3, 3);
+    // cout << "Hello" << endl;
+
     normals_.row(0) = Vector3d(1.0, 0.0, 0.0);
     normals_.row(1) = Vector3d(0.0, 1.0, 0.0);
     normals_.row(2) = Vector3d(0.0, 0.0, 1.0);
 
+    // cout << "Pre Reconstruct" << endl;
+
     reconstructHair();
+
+    // cout << "Post Reconstruct" << endl;
 
     // use these for milestone 2
     // computeLength();
@@ -162,6 +186,30 @@ void HairInstance::initializeFromCurvatures(const VectorXd curves, int eps, int 
     // computeSegments();
 }
 
+void HairInstance::buildConfiguration(VectorXd &q, VectorXd &qprev, VectorXd &v, int &index)
+{
+    int ndofs = getNumberOfDofs();
+    for (int i = 0; i < ndofs / 3; i++)
+    {
+        q.segment<3>(3 * (index + i)) = curvatures_.segment<3>(i * 3);
+        qprev.segment<3>(3 * (index + i)) = prev_curvatures_.segment<3>(i * 3);
+        v.segment<3>(3 * (index + i)) = curvatures_dot_.segment<3>(i * 3);
+    }
+    index += ndofs / 3;
+}
+
+void HairInstance::unbuildConfiguration(const VectorXd &q, const VectorXd &v, int &index)
+{
+    int ndofs = getNumberOfDofs();
+    prev_curvatures_ = curvatures_;
+    for (int i = 0; i < ndofs / 3; i++)
+    {
+        curvatures_.segment<3>(i * 3) = q.segment<3>(3 * (index + i));
+        curvatures_dot_.segment<3>(i * 3) = v.segment<3>(3 * (index + i));
+    }
+    index += ndofs / 3;
+}
+
 void HairInstance::reconstructHair()
 {
     // L is in terms of the segment
@@ -180,7 +228,7 @@ void HairInstance::reconstructHair()
 
     for (int i = 0; i < numberOfSegments_; i++)
     {
-        Vector3d curvature = curvatures_.row(i);
+        Vector3d curvature = curvatures_.segment<3>(i);
 
         if (i != 0)
         {
@@ -394,10 +442,10 @@ void HairInstance::render3D(double scale, double radius)
     glEnd();
 }
 
-int HairInstance::getNumberOfDofs()
+int HairInstance::getNumberOfDofs() const
 {
     // maybe do more stuff here later
-    return curvatures_.rows() * 3;
+    return curvatures_.size();
 }
 
 void HairInstance::preprocessRendering()
@@ -405,7 +453,7 @@ void HairInstance::preprocessRendering()
     // to be implemented
 }
 
-void HairInstance::interpolateTwo(const HairInstance* one, const HairInstance* two, double alpha, double beta)
+void HairInstance::interpolateTwo(HairInstance* one, HairInstance* two, double alpha, double beta)
 {
     HairInstance* oldOne = guideOne;
     HairInstance* oldTwo = guideTwo;
@@ -425,7 +473,7 @@ void HairInstance::interpolateTwo(const HairInstance* one, const HairInstance* t
     baryTwo = oldBaryTwo;
 }
 
-void HairInstance::interpolateThree(const HairInstance* one, const HairInstance* two, const HairInstance* three, double alpha, double beta, double gamma)
+void HairInstance::interpolateThree(HairInstance* one, HairInstance* two, HairInstance* three, double alpha, double beta, double gamma)
 {
     HairInstance* oldOne = guideOne;
     HairInstance* oldTwo = guideTwo;
@@ -453,14 +501,14 @@ void HairInstance::interpolateThree(const HairInstance* one, const HairInstance*
 
 void HairInstance::interpolateTwo()
 {
-    assert(guideOne->verts_.rows() == guideTwo->verts_.rows())
-    assert(baryOne + baryTwo == 1.0)
+    assert(guideOne->verts_.rows() == guideTwo->verts_.rows());
+    assert((baryOne + baryTwo) == 1.0);
 
     for (int i = 0; i < guideOne->verts_.rows(); i++)
     {
         Vector3d newVert;
         newVert.setZero();
-        
+
         newVert = baryOne * guideOne->verts_.row(i) + baryTwo * guideTwo->verts_.row(i);
 
         verts_.row(i) = newVert;
@@ -469,8 +517,8 @@ void HairInstance::interpolateTwo()
 
 void HairInstance::interpolateThree()
 {
-    assert(guideOne->verts_.rows() == guideTwo->verts.rows() && guideOne->verts_.rows() == guideThree->verts_.rows())
-    assert(baryOne + baryTwo + baryThree == 1.0)
+    assert(guideOne->verts_.rows() == guideTwo->verts_.rows() && guideOne->verts_.rows() == guideThree->verts_.rows());
+    assert((baryOne + baryTwo + baryThree) == 1.0);
 
     for (int i = 0; i < guideOne->verts_.rows(); i++)
     {

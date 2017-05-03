@@ -131,7 +131,9 @@ void Simulation::clearScene()
     hairs_.clear();
 
     // initialize the hairs for the test here
+    // cout << "Making Hair Strand" << endl;
     HairInstance* singleStrand = new HairInstance();
+    // cout << "WHHHAAATTT" << endl;
     hairs_.push_back(singleStrand);
 
     renderLock_.unlock();
@@ -150,11 +152,11 @@ void Simulation::buildConfiguration(VectorXd &q, VectorXd &qprev, VectorXd &v)
     qprev.resize(ndofs);
     v.resize(ndofs);
 
+    int currentIndex = 0;
+
     for (int i = 0; i < hairs_.size(); i++)
     {
-        q.segment<3>(3*i) = Vector3d(hairs_[i]->curvatures_(i, 0), hairs_[i]->curvatures_(i, 1), hairs_[i]->curvatures_(i, 2));
-        qprev.segment<3>(3*i) = Vector3d(hairs_[i]->prev_curvatures_(i, 0), hairs_[i]->prev_curvatures_(i, 1), hairs_[i]->prev_curvatures_(i, 2));
-        v.segment<3>(3*i) = Vector3d(hairs_[i]->curvatures_dot_(i, 0), hairs_[i]->curvatures_dot_(i, 1), hairs_[i]->curvatures_dot_(i, 2));
+        hairs_[i]->buildConfiguration(q, qprev, v, currentIndex);
     }
 }
 
@@ -162,20 +164,11 @@ void Simulation::unbuildConfiguration(const VectorXd &q, const VectorXd &v)
 {
     int ndofs = q.size();
 
-    for (int j = 0; j < hairs_[0]->getNumberOfSegments(); j++)
+    int currentIndex = 0;
+
+    for (int i = 0; i < hairs_.size(); i++)
     {
-        // FIX LATER
-        hairs_[0]->prev_curvatures_(j, 0) = hairs_[0]->curvatures_(j, 0);
-        hairs_[0]->prev_curvatures_(j, 1) = hairs_[0]->curvatures_(j, 1);
-        hairs_[0]->prev_curvatures_(j, 2) = hairs_[0]->curvatures_(j, 2);
-
-        hairs_[0]->curvatures_(j, 0) = q(j * 3);
-        hairs_[0]->curvatures_(j, 1) = q(j * 3 + 1);
-        hairs_[0]->curvatures_(j, 2) = q(j * 3 + 2);
-
-        hairs_[0]->curvatures_dot_(j, 0) = v(j * 3);
-        hairs_[0]->curvatures_dot_(j, 1) = v(j * 3 + 1);
-        hairs_[0]->curvatures_dot_(j, 1) = v(j * 3 + 2);
+        hairs_[i]->unbuildConfiguration(q, v, currentIndex);
     }
 }
 

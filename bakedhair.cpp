@@ -17,12 +17,12 @@ BakedHair::~BakedHair()
     // does nothing for now
 }
 
-BakedHair::readPositionsFromLine(std::string line)
+void BakedHair::readPositionsFromLine(std::string line)
 {
     // to be implemented
 }
 
-str::string BakedHair::writePositionsToLine()
+std::string BakedHair::writePositionsToLine()
 {
     std::string result;
     // to be implemented
