@@ -31,7 +31,8 @@ SOURCES += main.cpp\
     camera.cpp \
     vectormath.cpp \
     hairinstance.cpp \
-    bakedhair.cpp
+    bakedhair.cpp \
+    simprep.cpp
 
 HEADERS  += mainwindow.h \
     glpanel.h \
@@ -41,7 +42,8 @@ HEADERS  += mainwindow.h \
     camera.h \
     vectormath.h \
     hairinstance.h \
-    bakedhair.h
+    bakedhair.h \
+    simprep.h
 
 FORMS    += mainwindow.ui
 

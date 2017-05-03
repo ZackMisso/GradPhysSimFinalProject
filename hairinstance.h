@@ -12,6 +12,8 @@ public:
     HairInstance(const Eigen::MatrixX3d &verts);
     HairInstance(const Eigen::VectorXd &curves, Eigen::Vector3d startPos, Eigen::Matrix3d startNorm);
     HairInstance(const Eigen::VectorXd &curves, Eigen::Vector3d startPos, Eigen::Matrix3d startNorm, int eps, int nos, double length);
+    HairInstance(HairInstance* one, HairInstance* two, double alpha, double beta);
+    HairInstance(HairInstance* one, HairInstance* two, HairInstance* three, double alpha, double beta, double gamma);
 
     ~HairInstance();
 

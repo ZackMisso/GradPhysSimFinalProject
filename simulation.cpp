@@ -2,6 +2,7 @@
 #include <QGLWidget>
 #include "simparameters.h"
 #include "hairinstance.h"
+#include "simprep.h"
 #include <iostream>
 #include <Eigen/Dense>
 
@@ -128,13 +129,24 @@ void Simulation::clearScene()
         delete *it;
     }
 
+    for (vector<HairInstance *>::iterator it = interpHairs_.begin(); it != interpHairs_.end(); ++it)
+    {
+        delete *it;
+    }
+
     hairs_.clear();
+    interpHairs_.clear();
 
     // initialize the hairs for the test here
     // cout << "Making Hair Strand" << endl;
-    HairInstance* singleStrand = new HairInstance();
-    // cout << "WHHHAAATTT" << endl;
-    hairs_.push_back(singleStrand);
+
+    // HairInstance* singleStrand = new HairInstance();
+    // // cout << "WHHHAAATTT" << endl;
+    // hairs_.push_back(singleStrand);
+
+    // SimPrep::setupSingleStrandExample(hairs_);
+    SimPrep::setupInterpExample(hairs_);
+    createInterpolations();
 
     renderLock_.unlock();
 }
@@ -194,12 +206,23 @@ void Simulation::computeMassInverse(Eigen::SparseMatrix<double> &Minv)
 
 void Simulation::cleanInterpolations()
 {
-    // to be implemented
+    for (vector<HairInstance *>::iterator it = interpHairs_.begin(); it != interpHairs_.end(); ++it)
+    {
+        delete *it;
+    }
+
+    interpHairs_.clear();
 }
 
 void Simulation::createInterpolations()
 {
-    // to be implemented
+    if (hairs_.size() == 2)
+    {
+        for (double i = 0.05; i < 1.0; i += 0.05)
+        {
+            interpHairs_.push_back(new HairInstance(hairs_[0], hairs_[1], i, 1.0 - i));
+        }
+    }
 }
 
 void Simulation::bakeHairs()

@@ -30,6 +30,20 @@ HairInstance::HairInstance(const Eigen::VectorXd &curves, Vector3d startPos, Mat
     initializeFromCurvatures(curves, eps, nos, length, startPos, startNorm);
 }
 
+HairInstance::HairInstance(HairInstance* one, HairInstance* two, double alpha, double beta) : guideOne(one), guideTwo(two), baryOne(alpha), baryTwo(beta)
+{
+    verts_.resize(one->verts_.rows(), 3);
+    interpolateTwo();
+    reconstructHair();
+}
+
+HairInstance::HairInstance(HairInstance* one, HairInstance* two, HairInstance* three, double alpha, double beta, double gamma) : guideOne(one), guideTwo(two), guideThree(three), baryOne(alpha), baryTwo(beta), baryThree(gamma)
+{
+    verts_.resize(one->verts_.rows(), 3);
+    interpolateThree();
+    reconstructHair();
+}
+
 HairInstance::~HairInstance()
 {
     // to be implemented
@@ -507,6 +521,9 @@ void HairInstance::interpolateTwo()
     assert(guideOne->verts_.rows() == guideTwo->verts_.rows());
     assert((baryOne + baryTwo) == 1.0);
 
+    pos_.setZero();
+    pos_ = guideOne->pos_ * baryOne + guideTwo->pos_ * baryTwo;
+
     for (int i = 0; i < guideOne->verts_.rows(); i++)
     {
         Vector3d newVert;
@@ -522,6 +539,8 @@ void HairInstance::interpolateThree()
 {
     assert(guideOne->verts_.rows() == guideTwo->verts_.rows() && guideOne->verts_.rows() == guideThree->verts_.rows());
     assert((baryOne + baryTwo + baryThree) == 1.0);
+
+    pos_ = guideOne->pos_ * baryOne + guideTwo->pos_ * baryTwo + guideThree->pos_ * baryTwo;
 
     for (int i = 0; i < guideOne->verts_.rows(); i++)
     {
