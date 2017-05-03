@@ -189,6 +189,7 @@ void HairInstance::initializeFromCurvatures(const VectorXd curves, int eps, int 
 void HairInstance::buildConfiguration(VectorXd &q, VectorXd &qprev, VectorXd &v, int &index)
 {
     int ndofs = getNumberOfDofs();
+    // cout << "NDOFS: " << ndofs << endl;
     for (int i = 0; i < ndofs / 3; i++)
     {
         q.segment<3>(3 * (index + i)) = curvatures_.segment<3>(i * 3);
@@ -226,9 +227,11 @@ void HairInstance::reconstructHair()
     double darbouxNorm;
     Vector3d omega;
 
+    // cout << "NUMBER OF SEG: " << numberOfSegments_ << endl;
+
     for (int i = 0; i < numberOfSegments_; i++)
     {
-        Vector3d curvature = curvatures_.segment<3>(i);
+        Vector3d curvature = curvatures_.segment<3>(i * 3);
 
         if (i != 0)
         {
