@@ -268,7 +268,7 @@ void HairInstance::computeNormals()
     //     normals_.row(i) = Vector3d(0.0, 0.0, 1.0);
 }
 
-void HairInstance::render2D(double scale)
+/*void HairInstance::render2D(double scale)
 {
     glLineWidth(2.0);
     glColor3f(color_[0], color_[1], color_[2]);
@@ -344,8 +344,8 @@ void HairInstance::render3D(double scale, double radius)
     // glVertex3d(50, 50, 0.0);
     // glVertex3d(20, 20, 0.0);
     // glVertex3d(10, 10, 0.0);
-    glEnd();
-}
+    // glEnd();
+}*/
 
 int HairInstance::getNumberOfDofs()
 {

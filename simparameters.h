@@ -42,6 +42,23 @@ struct SimParameters
     int rodSegments;
 
     double artificialScale;
+
+    int numberOfSegments;
+    int edgesPerSegment;
+
+    double length;
+
+    bool glRendering;
+    bool glsRendering;
+    bool raytracing;
+
+    bool singleStrandExample;
+    bool interpExample;
+    bool sphereExample;
+    bool headExample;
+
+    bool showSegments;
+    bool show3D;
 };
 
 #endif // SIMPARAMETERS_H

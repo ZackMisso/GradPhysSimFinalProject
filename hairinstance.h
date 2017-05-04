@@ -17,13 +17,14 @@ public:
     const Eigen::MatrixX3d &getVerts() const { return verts_; }
     const Eigen::MatrixX3d &getSegment(int seg) { return segments_[seg]; };
 
-    void render2D(double scale);
-    void render3D(double scale, double radius);
+    //void render2D(double scale);
+    //void render3D(double scale, double radius);
 
     void reconstructHair();
 
     int getNumberOfDofs();
     int getNumberOfSegments() { return numberOfSegments_; }
+    int getEdgesPerSegment() { return edgesPerSegment_; }
 
     // simulation info
     Eigen::Vector3d pos_; // location of first vert

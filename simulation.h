@@ -6,6 +6,8 @@
 #include <vector>
 #include <set>
 #include <QMutex>
+#include "renderer.h"
+#include "rigidbodyinstance.h"
 
 typedef Eigen::Triplet<double> Tr;
 
@@ -25,11 +27,14 @@ public:
     void clearScene();
 
     std::vector<HairInstance*> hairs_;
+    std::vector<HairInstance*> interpHairs_;
+    std::vector<RigidBodyInstance*> bodies_;
 
     double getTime() { return time_; };
 
 private:
     const SimParameters &params_;
+    Renderer* renderer;
     QMutex renderLock_;
 
     double time_;

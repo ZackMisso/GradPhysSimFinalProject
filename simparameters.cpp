@@ -29,4 +29,21 @@ SimParameters::SimParameters()
     rodSegments = 5;
 
     artificialScale = 1.0;
+
+    numberOfSegments = 2;
+    edgesPerSegment = 100;
+
+    length = 1.0;
+
+    glRendering = true;
+    glsRendering = false;
+    raytracing = false;
+
+    singleStrandExample = true;
+    interpExample = false;
+    sphereExample = false;
+    headExample = false;
+
+    showSegments = false;
+    show3D = false;
 }

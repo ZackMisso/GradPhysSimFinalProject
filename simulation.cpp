@@ -2,6 +2,9 @@
 #include <QGLWidget>
 #include "simparameters.h"
 #include "hairinstance.h"
+#include "glrenderer.h"
+#include "glsrenderer.h"
+#include "raytracer.h"
 #include <iostream>
 #include <Eigen/Dense>
 
@@ -19,18 +22,7 @@ void Simulation::render(bool is3D)
 {
     if (renderLock_.tryLock())
     {
-        for (int i = 0; i < hairs_.size(); i++)
-        {
-            if (is3D)
-            {
-                // replace with actual radius later
-                hairs_[i]->render3D(params_.artificialScale, 1.0);
-            }
-            else
-            {
-                hairs_[i]->render2D(params_.artificialScale);
-            }
-        }
+        renderer->render(params_, hairs_, interpHairs_, bodies_);
         renderLock_.unlock();
     }
 }
@@ -113,7 +105,13 @@ void Simulation::clearScene()
         delete *it;
     }
 
+    delete renderer;
+
     hairs_.clear();
+    interpHairs_.clear();
+    bodies_.clear();
+
+    renderer = new GLRenderer();
 
     // initialize the hairs for the test here
     HairInstance* singleStrand = new HairInstance();

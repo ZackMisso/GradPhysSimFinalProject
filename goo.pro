@@ -30,7 +30,12 @@ SOURCES += main.cpp\
     simparameters.cpp \
     camera.cpp \
     vectormath.cpp \
-    hairinstance.cpp
+    hairinstance.cpp \
+    renderer.cpp \
+    glrenderer.cpp \
+    glsrenderer.cpp \
+    raytracer.cpp \
+    rigidbodyinstance.cpp
 
 HEADERS  += mainwindow.h \
     glpanel.h \
@@ -39,7 +44,12 @@ HEADERS  += mainwindow.h \
     simparameters.h \
     camera.h \
     vectormath.h \
-    hairinstance.h
+    hairinstance.h \
+    renderer.h \
+    glrenderer.h \
+    glsrenderer.h \
+    raytracer.h \
+    rigidbodyinstance.h
 
 FORMS    += mainwindow.ui
 
