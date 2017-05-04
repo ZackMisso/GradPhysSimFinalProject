@@ -32,14 +32,31 @@ HairInstance::HairInstance(const Eigen::VectorXd &curves, Vector3d startPos, Mat
 
 HairInstance::HairInstance(HairInstance* one, HairInstance* two, double alpha, double beta) : guideOne(one), guideTwo(two), baryOne(alpha), baryTwo(beta)
 {
+    cout << "Before Resize" << endl;
     verts_.resize(one->verts_.rows(), 3);
+    curvatures_.resize(one->curvatures_.size());
+    curvatures_.setZero();
+    verts_.setZero();
+    numberOfSegments_ = one->numberOfSegments_;
+    edgesPerSegment_ = one->edgesPerSegment_;
+    lengthPerEdge_ = one->lengthPerEdge_;
+    lengthPerSegment_ = one->lengthPerSegment_;
+    length_ = one->length_;
+    cout << "Before Interpolate" << endl;
     interpolateTwo();
+    cout << "Before Reconstruct" << endl;
     reconstructHair();
+    cout << "After Reconstruct" << endl;
 }
 
 HairInstance::HairInstance(HairInstance* one, HairInstance* two, HairInstance* three, double alpha, double beta, double gamma) : guideOne(one), guideTwo(two), guideThree(three), baryOne(alpha), baryTwo(beta), baryThree(gamma)
 {
     verts_.resize(one->verts_.rows(), 3);
+    numberOfSegments_ = one->numberOfSegments_;
+    edgesPerSegment_ = one->edgesPerSegment_;
+    lengthPerEdge_ = one->lengthPerEdge_;
+    lengthPerSegment_ = one->lengthPerSegment_;
+    length_ = one->length_;
     interpolateThree();
     reconstructHair();
 }
@@ -241,7 +258,7 @@ void HairInstance::reconstructHair()
     double darbouxNorm;
     Vector3d omega;
 
-    // cout << "NUMBER OF SEG: " << numberOfSegments_ << endl;
+    cout << "NUMBER OF SEG: " << numberOfSegments_ << endl;
 
     for (int i = 0; i < numberOfSegments_; i++)
     {
@@ -529,7 +546,11 @@ void HairInstance::interpolateTwo()
         Vector3d newVert;
         newVert.setZero();
 
+        // cout << "BEFORE STUFF" << endl;
+
         newVert = baryOne * guideOne->verts_.row(i) + baryTwo * guideTwo->verts_.row(i);
+
+        // cout << "After STUFF" << endl;
 
         verts_.row(i) = newVert;
     }

@@ -216,11 +216,14 @@ void Simulation::cleanInterpolations()
 
 void Simulation::createInterpolations()
 {
+    cout << "HAIRSIZE: " << hairs_.size() << endl;
     if (hairs_.size() == 2)
     {
-        for (double i = 0.05; i < 1.0; i += 0.05)
+        for (double i = 0.2; i < 1.0; i += 0.2)
         {
+            cout << "Before CREATE" << endl;
             interpHairs_.push_back(new HairInstance(hairs_[0], hairs_[1], i, 1.0 - i));
+            cout << "AFTER CREATE" << endl;
         }
     }
 }
