@@ -47,6 +47,7 @@ public:
 
     // simulation info
     Eigen::Vector3d pos_; // location of first vert
+    Eigen::VectorXd initialCurvatures_;
     Eigen::VectorXd curvatures_;
     Eigen::VectorXd prev_curvatures_;
     Eigen::VectorXd curvatures_dot_;
@@ -86,7 +87,6 @@ private:
 
     // template info
     Eigen::MatrixX3d template_verts_;
-    Eigen::VectorXd initialCurvatures_;
     std::vector<Eigen::MatrixX3d> segments_;
     std::vector<double> segmentLengths_;
     double length_;

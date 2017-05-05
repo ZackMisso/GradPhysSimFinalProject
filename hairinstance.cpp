@@ -249,7 +249,7 @@ void HairInstance::reconstructHair()
     // L is in terms of the segment
     // s is distance between 0 and L for segment
 
-    cout << "IN RECONSTRUCT" << endl;
+    // cout << "IN RECONSTRUCT" << endl;
 
     Vector3d lastPos = pos_;
     verts_.row(0) = lastPos;
@@ -306,7 +306,7 @@ void HairInstance::reconstructHair()
         lastPos = nextPos;
     }
 
-    cout << "LEAVING RECONSTRUCT" << endl;
+    // cout << "LEAVING RECONSTRUCT" << endl;
 }
 
 void HairInstance::calculateNewInitialConditions(Vector3d q, Vector3d start, Matrix3d n, Vector3d &newStart, Matrix3d &newNorms)
@@ -459,10 +459,10 @@ Vector3d HairInstance::hairF(int j, Vector3d qip1, Vector3d qi, Vector3d qim1, V
     Vector3d f;
     f.setZero();
 
-    double M = 1.0;
+    double M = 0.01;
     // double G = 9.81;
-    double G = 0.01;
-    double h = 0.001; // change!!!
+    double G = 0.1;
+    double h = 0.1; // change!!!
 
     Vector3d firstTerm;
     Vector3d secondTerm;
@@ -493,7 +493,7 @@ Vector3d HairInstance::hairF(int j, Vector3d qip1, Vector3d qi, Vector3d qim1, V
         thirdTerm += M * G * drsh(s, qi, start, norms).row(1); // maybe 2
     }
 
-    secondTerm = qi - Vector3d(0.0, 0.0, -0.3); // - qn * (EI)
+    secondTerm = qi - initialCurvatures_.segment<3>(j * 3); // - qn * (EI)
     // secondTerm.setZero();
 
     f = fourthTerm - firstTerm - secondTerm - thirdTerm;

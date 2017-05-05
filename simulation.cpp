@@ -95,7 +95,9 @@ void Simulation::numericalIntegration(Eigen::VectorXd &q, Eigen::VectorXd &qprev
     computeForceAndHessian(q, qprev, F, H);
 
     VectorXd guessFull = q;
-    cout << "STARTING numericalIntegration" << endl;
+    // cout << "STARTING numericalIntegration" << endl;
+
+    int total = 0;
 
     for (int i = 0; i < hairs_.size(); i++)
     // for (int i = 0; i < 1; i++)
@@ -147,7 +149,7 @@ void Simulation::numericalIntegration(Eigen::VectorXd &q, Eigen::VectorXd &qprev
                 // cout << "Before Compute Solver" << endl;
                 solver.compute(B);
                 dq = solver.solve(f);
-                cout << "dq in newton\n" << dq.norm() << endl;
+                cout << "dq in newton " << dq.norm() << endl;
                 qip1 = qip1 - dq;
 
                 f = hairs_[i]->hairF(j, qip1, qi, qim1, start, norms);
@@ -167,9 +169,13 @@ void Simulation::numericalIntegration(Eigen::VectorXd &q, Eigen::VectorXd &qprev
 
             // exit(1);
 
-            guessFull.segment<3>(j * 3) = qip1;
+            guessFull.segment<3>(total) = qip1;
+
+            total += 3;
         }
     }
+
+    cout << "FINSIEDH" << endl;
 
     VectorXd guess = q;
 
@@ -227,6 +233,7 @@ void Simulation::clearScene()
 
     SimPrep::setupSingleStrandExample(hairs_);
     // SimPrep::setupInterpExample(hairs_);
+    // SimPrep::setupBundleExample(hairs_);
     createInterpolations();
 
     renderLock_.unlock();
