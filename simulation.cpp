@@ -32,8 +32,10 @@ void Simulation::render(bool is3D)
                 hairs_[i]->render2D(params_.artificialScale);
             }
         }
+        cout << "RENDERING" << endl;
         for (int i = 0; i < interpHairs_.size(); i++)
         {
+            cout << "RENDERING INTERP" << endl;
             if (is3D)
             {
                 // replace with actual radius later
@@ -63,11 +65,15 @@ void Simulation::takeSimulationStep()
     q[5] = 5 - 3 * sin(time_);
 
     // numericalIntegration(q, qprev, v);
-    unbuildConfiguration(q, v);
-    reconstruction();
+    renderLock_.lock();
+    {
+        unbuildConfiguration(q, v);
+        reconstruction();
 
-    cleanInterpolations();
-    createInterpolations();
+        cleanInterpolations();
+        createInterpolations();
+    }
+    renderLock_.unlock();
 
     time_ += params_.timeStep;
 }
@@ -219,7 +225,7 @@ void Simulation::createInterpolations()
     cout << "HAIRSIZE: " << hairs_.size() << endl;
     if (hairs_.size() == 2)
     {
-        for (double i = 0.2; i < 1.0; i += 0.2)
+        for (double i = 0.05; i < 1.0; i += 0.05)
         {
             cout << "Before CREATE" << endl;
             interpHairs_.push_back(new HairInstance(hairs_[0], hairs_[1], i, 1.0 - i));

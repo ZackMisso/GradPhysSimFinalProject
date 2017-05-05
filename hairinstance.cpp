@@ -42,6 +42,7 @@ HairInstance::HairInstance(HairInstance* one, HairInstance* two, double alpha, d
     lengthPerEdge_ = one->lengthPerEdge_;
     lengthPerSegment_ = one->lengthPerSegment_;
     length_ = one->length_;
+    normals_ = one->normals_; // THIS NEEDS TO BE CHANGED
     cout << "Before Interpolate" << endl;
     interpolateTwo();
     cout << "Before Reconstruct" << endl;
@@ -442,6 +443,10 @@ void HairInstance::render3D(double scale, double radius)
     // glColor3f(color_[0], color_[1], color_[2]);
 
     glBegin(GL_LINES);
+    cout << "ROWS: " << verts_.rows() << endl;
+    cout << verts_(0, 0) << " " << verts_(0, 1) << " " << verts_(0, 2) << endl;
+    cout << verts_(1, 0) << " " << verts_(1, 1) << " " << verts_(1, 2) << endl;
+    cout << verts_(2, 0) << " " << verts_(2, 1) << " " << verts_(2, 2) << endl;
     for (int i = 0; i < verts_.rows()-1; i++)
     {
         glVertex3d(verts_(i, 0), verts_(i, 1), verts_(i, 2));
@@ -473,7 +478,7 @@ void HairInstance::render3D(double scale, double radius)
     // glVertex3d(50, 50, 0.0);
     // glVertex3d(20, 20, 0.0);
     // glVertex3d(10, 10, 0.0);
-    glEnd();
+    // glEnd();
 }
 
 int HairInstance::getNumberOfDofs() const
@@ -540,20 +545,40 @@ void HairInstance::interpolateTwo()
 
     pos_.setZero();
     pos_ = guideOne->pos_ * baryOne + guideTwo->pos_ * baryTwo;
+    color_ = guideOne->color_ * baryOne + guideTwo->color_ * baryTwo;
 
-    for (int i = 0; i < guideOne->verts_.rows(); i++)
-    {
-        Vector3d newVert;
-        newVert.setZero();
+    // cout << "POS: " << pos_[0] << " " << pos_[1] << " " << pos_[2] << endl;
 
-        // cout << "BEFORE STUFF" << endl;
+    curvatures_ = guideOne->curvatures_ * baryOne + guideTwo->curvatures_ * baryTwo;
 
-        newVert = baryOne * guideOne->verts_.row(i) + baryTwo * guideTwo->verts_.row(i);
+    // for (int i = 0; i < guideOne->verts_.rows(); i++)
+    // {
+    //     Vector3d newVert;
+    //     newVert.setZero();
 
-        // cout << "After STUFF" << endl;
+    //     // cout << "BEFORE STUFF" << endl;
 
-        verts_.row(i) = newVert;
-    }
+    //     newVert = baryOne * guideOne->verts_.row(i) + baryTwo * guideTwo->verts_.row(i);
+
+    //     // cout << "After STUFF" << endl;
+    //     cout << "NEWVERT: " << newVert[0] << " " << newVert[1] << " " << newVert[2] << endl;
+
+    //     verts_.row(i) = newVert;
+    // }
+
+    //pos_ = verts_.row(0);
+
+
+
+
+    // cout << "VERTS" << endl;
+    // cout << verts_ << endl;
+
+    // exit(0);
+
+    cout << "BARYS: " << baryOne << " " << baryTwo << endl;
+
+    cout << "POS: " << pos_[0] << " " << pos_[1] << " " << pos_[2] << endl;
 }
 
 void HairInstance::interpolateThree()
@@ -562,14 +587,17 @@ void HairInstance::interpolateThree()
     assert((baryOne + baryTwo + baryThree) == 1.0);
 
     pos_ = guideOne->pos_ * baryOne + guideTwo->pos_ * baryTwo + guideThree->pos_ * baryTwo;
+    color_ = guideOne->color_ * baryOne + guideTwo->color_ * baryTwo + guideThree->color_ * baryThree;
 
-    for (int i = 0; i < guideOne->verts_.rows(); i++)
-    {
-        Vector3d newVert;
-        newVert.setZero();
+    curvatures_ = guideOne->curvatures_ * baryOne + guideTwo->curvatures_ * baryTwo + guideThree->curvatures_ * baryThree;
 
-        newVert = baryOne * guideOne->verts_.row(i) + baryTwo * guideTwo->verts_.row(i) + baryThree * guideThree->verts_.row(i);
+    // for (int i = 0; i < guideOne->verts_.rows(); i++)
+    // {
+    //     Vector3d newVert;
+    //     newVert.setZero();
 
-        verts_.row(i) = newVert;
-    }
+    //     newVert = baryOne * guideOne->verts_.row(i) + baryTwo * guideTwo->verts_.row(i) + baryThree * guideThree->verts_.row(i);
+
+    //     verts_.row(i) = newVert;
+    // }
 }
