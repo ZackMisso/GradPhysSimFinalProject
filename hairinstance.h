@@ -26,6 +26,11 @@ public:
 
     void reconstructHair();
 
+    Eigen::Vector3d rsh(double s, Eigen::Vector3d q, Eigen::Vector3d start, Eigen::Matrix3d n);
+    Eigen::Matrix3d drsh(double s, Eigen::Vector3d q, Eigen::Vector3d start, Eigen::Matrix3d n);
+    Eigen::Vector3d hairF(int j, Eigen::Vector3d qip1, Eigen::Vector3d qi, Eigen::Vector3d qim1, Eigen::Vector3d start, Eigen::Matrix3d norms);
+    Eigen::Matrix3d hairdF(int j, Eigen::Vector3d qip1, Eigen::Vector3d qi, Eigen::Vector3d qim1, Eigen::Vector3d start, Eigen::Matrix3d norms);
+
     int getNumberOfDofs() const;
     int getNumberOfSegments() const { return numberOfSegments_; }
 
@@ -45,6 +50,7 @@ public:
     Eigen::VectorXd curvatures_dot_;
     // use the bottom two for rendering later
     Eigen::MatrixX3d verts_;
+    Eigen::Matrix3d normals_;
     // Eigen::MatrixX3d verts_dot;
 
 private:
@@ -79,7 +85,6 @@ private:
     // template info
     Eigen::MatrixX3d template_verts_;
     Eigen::VectorXd initialCurvatures_;
-    Eigen::Matrix3d normals_;
     std::vector<Eigen::MatrixX3d> segments_;
     std::vector<double> segmentLengths_;
     double length_;

@@ -32,10 +32,10 @@ void Simulation::render(bool is3D)
                 hairs_[i]->render2D(params_.artificialScale);
             }
         }
-        cout << "RENDERING" << endl;
+        // cout << "RENDERING" << endl;
         for (int i = 0; i < interpHairs_.size(); i++)
         {
-            cout << "RENDERING INTERP" << endl;
+            // cout << "RENDERING INTERP" << endl;
             if (is3D)
             {
                 // replace with actual radius later
@@ -56,15 +56,16 @@ void Simulation::takeSimulationStep()
 
     buildConfiguration(q, qprev, v);
 
-    q[0] = 4 * cos(time_ / 2.0 + 0.5);
-    q[1] = 2 * sin(time_) - 3 * cos(time_);
-    q[2] = sin(time_ + 3.14 / 6);
+    // q[0] = 4 * cos(time_ / 2.0 + 0.5);
+    // q[1] = 2 * sin(time_) - 3 * cos(time_);
+    // q[2] = sin(time_ + 3.14 / 6);
 
-    q[3] = 3 * cos(time_) + 3 * cos(time_ / 3.14);
-    q[4] = -3 * cos(time_ / 2.0 + 0.5);;
-    q[5] = 5 - 3 * sin(time_);
+    // q[3] = 3 * cos(time_) + 3 * cos(time_ / 3.14);
+    // q[4] = -3 * cos(time_ / 2.0 + 0.5);;
+    // q[5] = 5 - 3 * sin(time_);
 
-    // numericalIntegration(q, qprev, v);
+    numericalIntegration(q, qprev, v);
+
     renderLock_.lock();
     {
         unbuildConfiguration(q, v);
@@ -91,17 +92,74 @@ void Simulation::numericalIntegration(Eigen::VectorXd &q, Eigen::VectorXd &qprev
 
     computeForceAndHessian(q, qprev, F, H);
 
-    // for (int i = 0; i < hairs_.size(); i++)
-    // {
-    //     // numericalIntegration on each individual curvature
-    // }
+    VectorXd guessFull = q;
+
+    for (int i = 0; i < hairs_.size(); i++)
+    {
+        // numericalIntegration on each individual curvature
+        Matrix3d norms = hairs_[i]->normals_;
+        Vector3d start = hairs_[i]->pos_;
+
+        for (int j = 0; j < hairs_[i]->getNumberOfSegments(); j++)
+        {
+            Vector3d qi = hairs_[i]->curvatures_.segment<3>(j * 3);
+            Vector3d qim1 = hairs_[i]->prev_curvatures_.segment<3>(j * 3);
+            Vector3d qip1 = qi;
+
+            BiCGSTAB<Matrix3d > solver;
+            Vector3d dq;
+            dq.setZero();
+            Matrix3d B;
+            B.setZero();
+
+            int iterations = 0;
+
+            Vector3d f = hairs_[i]->hairF(j, qip1, qi, qim1, start, norms);
+
+            // cout << "FNORM: " << f.norm() << endl;
+            // cout << "F:" << endl;
+            // cout << f << endl;
+            // cout << "NEWMAX " << params_.NewtonMaxIters << endl;
+
+            while (f.norm() > params_.NewtonTolerance && iterations < params_.NewtonMaxIters)
+            {
+                // cout << "Setting B" << endl;
+                if (iterations == 2)
+                {
+                    exit(1);
+                }
+                B = hairs_[i]->hairdF(j, qip1, qi, qim1, start, norms);
+                cout << "QI:" << endl;
+                cout << qi << endl;
+                cout << "QIP1:" << endl;
+                cout << qip1 << endl;
+                cout << "F:" << endl;
+                cout << f << endl;
+                cout << "dF:" << endl;
+                cout << B << endl;
+                // cout << "Before Compute Solver" << endl;
+                solver.compute(B);
+                dq = solver.solve(f);
+                cout << "dq in newton\n" << dq << endl;
+                qip1 = qip1 + dq;
+
+                f = hairs_[i]->hairF(j, qip1, qi, qim1, start, norms);
+
+                iterations++;
+            }
+
+            exit(1);
+
+            // guessFull.segment<3>(j * 3) = qip1;
+        }
+    }
 
     VectorXd guess = q;
 
     // stuff could go here
 
     v = (guess - q) / params_.timeStep;
-    q = guess;
+    q = guessFull;
 }
 
 void Simulation::reconstruction()
@@ -150,8 +208,8 @@ void Simulation::clearScene()
     // // cout << "WHHHAAATTT" << endl;
     // hairs_.push_back(singleStrand);
 
-    // SimPrep::setupSingleStrandExample(hairs_);
-    SimPrep::setupInterpExample(hairs_);
+    SimPrep::setupSingleStrandExample(hairs_);
+    // SimPrep::setupInterpExample(hairs_);
     createInterpolations();
 
     renderLock_.unlock();
@@ -222,14 +280,14 @@ void Simulation::cleanInterpolations()
 
 void Simulation::createInterpolations()
 {
-    cout << "HAIRSIZE: " << hairs_.size() << endl;
+    // cout << "HAIRSIZE: " << hairs_.size() << endl;
     if (hairs_.size() == 2)
     {
         for (double i = 0.05; i < 1.0; i += 0.05)
         {
-            cout << "Before CREATE" << endl;
+            // cout << "Before CREATE" << endl;
             interpHairs_.push_back(new HairInstance(hairs_[0], hairs_[1], i, 1.0 - i));
-            cout << "AFTER CREATE" << endl;
+            // cout << "AFTER CREATE" << endl;
         }
     }
 }

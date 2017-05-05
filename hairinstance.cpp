@@ -2,37 +2,38 @@
 #include <QGLWidget>
 #include <iostream>
 #include <Eigen/Dense>
+#include "vectormath.h"
 
 using namespace std;
 using namespace Eigen;
 
 HairInstance::HairInstance()
 {
-    cout << "Initializing From Nothing" << endl;
+    // cout << "Initializing From Nothing" << endl;
     initializeLine(100, 2);
 }
 
 HairInstance::HairInstance(const Eigen::MatrixX3d &pos)
 {
-    cout << "Initializing from Positions" << endl;
+    // cout << "Initializing from Positions" << endl;
     initializeFromPositions(pos, 100, 2);
 }
 
 HairInstance::HairInstance(const Eigen::VectorXd &curves, Vector3d startPos, Matrix3d startNorm)
 {
-    cout << "Initializing from default curvatures" << endl;
+    // cout << "Initializing from default curvatures" << endl;
     initializeFromCurvatures(curves, 100, 2, 1.0, startPos, startNorm);
 }
 
 HairInstance::HairInstance(const Eigen::VectorXd &curves, Vector3d startPos, Matrix3d startNorm, int eps, int nos, double length)
 {
-    cout << "Initializing from custom curvatures" << endl;
+    // cout << "Initializing from custom curvatures" << endl;
     initializeFromCurvatures(curves, eps, nos, length, startPos, startNorm);
 }
 
 HairInstance::HairInstance(HairInstance* one, HairInstance* two, double alpha, double beta) : guideOne(one), guideTwo(two), baryOne(alpha), baryTwo(beta)
 {
-    cout << "Before Resize" << endl;
+    // cout << "Before Resize" << endl;
     verts_.resize(one->verts_.rows(), 3);
     curvatures_.resize(one->curvatures_.size());
     curvatures_.setZero();
@@ -43,11 +44,11 @@ HairInstance::HairInstance(HairInstance* one, HairInstance* two, double alpha, d
     lengthPerSegment_ = one->lengthPerSegment_;
     length_ = one->length_;
     normals_ = one->normals_; // THIS NEEDS TO BE CHANGED
-    cout << "Before Interpolate" << endl;
+    // cout << "Before Interpolate" << endl;
     interpolateTwo();
-    cout << "Before Reconstruct" << endl;
+    // cout << "Before Reconstruct" << endl;
     reconstructHair();
-    cout << "After Reconstruct" << endl;
+    // cout << "After Reconstruct" << endl;
 }
 
 HairInstance::HairInstance(HairInstance* one, HairInstance* two, HairInstance* three, double alpha, double beta, double gamma) : guideOne(one), guideTwo(two), guideThree(three), baryOne(alpha), baryTwo(beta), baryThree(gamma)
@@ -259,7 +260,7 @@ void HairInstance::reconstructHair()
     double darbouxNorm;
     Vector3d omega;
 
-    cout << "NUMBER OF SEG: " << numberOfSegments_ << endl;
+    // cout << "NUMBER OF SEG: " << numberOfSegments_ << endl;
 
     for (int i = 0; i < numberOfSegments_; i++)
     {
@@ -298,6 +299,167 @@ void HairInstance::reconstructHair()
 
         lastPos = nextPos;
     }
+}
+
+Vector3d HairInstance::rsh(double s, Vector3d q, Vector3d start, Matrix3d n)
+{
+    Vector3d r;
+    r.setZero();
+
+    // cout << "RSH" << endl;
+
+    Vector3d n0 = n.row(0);
+    Vector3d n1 = n.row(1);
+    Vector3d n2 = n.row(2);
+
+    Vector3d initialDarboux = q[0] * n0 + q[1] * n1 + q[2] * n2;
+    double darbouxNorm = initialDarboux.norm();
+    Vector3d omega = initialDarboux / darbouxNorm;
+
+    Vector3d par = para(n0, omega);
+    Vector3d per = perp(n0, omega);
+    Vector3d cros = omega.cross(per);
+
+    // cout << "Before First Term" << endl;
+    Vector3d firstTerm = start;
+
+    // cout << "Before Second Term" << endl;
+    Vector3d secondTerm = par * s;
+
+    // cout << "Before Third Term" << endl;
+    Vector3d thirdTerm = per * ( sin(darbouxNorm * s) / darbouxNorm );
+
+    // cout << "Before Fourth Term" << endl;
+    Vector3d fourthTerm = cros * ( ( 1 - cos(darbouxNorm * s) ) / darbouxNorm );
+    r = firstTerm + secondTerm + thirdTerm + fourthTerm;
+
+    // cout << "Finished RSH" << endl;
+
+    return r;
+}
+
+Matrix3d HairInstance::drsh(double s, Vector3d q, Vector3d start, Matrix3d n)
+{
+    Matrix3d dr;
+    dr.setZero();
+
+    // cout << "DRSH" << endl;
+
+    Vector3d n0 = n.row(0);
+    Vector3d n1 = n.row(1);
+    Vector3d n2 = n.row(2);
+
+    Vector3d initialDarboux = q[0] * n0 + q[1] * n1 + q[2] * n2;
+    double darbouxNorm = initialDarboux.norm();
+    Vector3d omega = initialDarboux / darbouxNorm;
+
+    Vector3d par = para(n0, omega);
+    Vector3d per = perp(n0, omega);
+    Vector3d cros = omega.cross(per);
+
+    Matrix3d firstTerm;
+    Matrix3d secondTerm;
+    Matrix3d thirdTerm;
+
+    firstTerm.setZero();
+    secondTerm.setZero();
+    thirdTerm.setZero();
+
+    // cout << "BEFORE FIRST TERM" << endl;
+    firstTerm = per * (darbouxNorm * cos(darbouxNorm * s) * s * q.transpose() / darbouxNorm - sin(darbouxNorm * s) * s * q.transpose() / darbouxNorm) / (darbouxNorm * darbouxNorm);
+
+    // cout << "Before Second Term" << endl;
+    secondTerm = VectorMath::crossProductMatrix(per * ((1 - cos(darbouxNorm * s)) / darbouxNorm)) * (n.transpose() / darbouxNorm - initialDarboux * q.transpose() / (darbouxNorm * darbouxNorm * darbouxNorm));
+
+    // cout << "Before Third Term" << endl;
+    thirdTerm = VectorMath::crossProductMatrix(omega) * per * ( ( darbouxNorm * sin(darbouxNorm * s) * s * q.transpose() / darbouxNorm - (1 - cos(darbouxNorm * s)) * s * q.transpose() / darbouxNorm) / (darbouxNorm * darbouxNorm) );
+
+    dr = firstTerm - secondTerm + thirdTerm;
+
+    // cout << "Finished DRSH" << endl;
+
+    return dr;
+}
+
+Vector3d HairInstance::hairF(int j, Vector3d qip1, Vector3d qi, Vector3d qim1, Vector3d start, Matrix3d norms)
+{
+    Vector3d f;
+    f.setZero();
+
+    double M = 1.0;
+    double G = 9.81;
+    double h = 0.001; // change!!!
+
+    Vector3d firstTerm;
+    Vector3d secondTerm;
+    Vector3d thirdTerm;
+    Vector3d fourthTerm;
+
+    firstTerm.setZero();
+    secondTerm.setZero();
+    thirdTerm.setZero();
+    fourthTerm.setZero();
+
+    // cout << "HAIR F" << endl;
+
+    for (int i = 0; i < edgesPerSegment_; i++)
+    {
+        double s = lengthPerEdge_*(i+1);
+
+        // cout << "Before First Term" << endl;
+
+        firstTerm += M * ((rsh(s, qip1, start, norms) - rsh(s, qi, start, norms)) / h).transpose() * drsh(s, qi, start, norms);
+
+        // cout << "Before Second Term" << endl;
+
+        fourthTerm += M * ((rsh(s, qi, start, norms) - rsh(s, qim1, start, norms)) / h).transpose() * drsh(s, qi, start, norms);
+
+        // cout << "Before Third Term" << endl;
+
+        thirdTerm += M * G * drsh(s, qi, start, norms).row(1); // maybe 2
+    }
+
+    secondTerm = qi - Vector3d(0.0, 0.0, -2.0); // - qn * (EI)
+
+    f = fourthTerm - firstTerm - secondTerm - thirdTerm;
+
+    f /= edgesPerSegment_;
+
+    // cout << "Finished HAIR F" << endl;
+
+    return f;
+}
+
+Matrix3d HairInstance::hairdF(int j, Vector3d qip1, Vector3d qi, Vector3d qim1, Vector3d start, Matrix3d norms)
+{
+    Matrix3d df;
+    df.setZero();
+
+    // cout << "IN HAIR DF" << endl;
+
+    double M = 1.0;
+    double h = 0.001;
+
+    for (int i = 0; i < edgesPerSegment_; i++)
+    {
+        double s = lengthPerEdge_*(i+1);
+
+        // cout << "Before Calc DF" << endl;
+
+        cout << "DRSH i1:" << endl;
+        cout << (drsh(s, qip1, start, norms) / h) << endl;
+
+        cout << "DRSH i:" << endl;
+        cout << (drsh(s, qi, start, norms) / h) << endl;
+
+        df += (drsh(s, qip1, start, norms) / h).transpose() * drsh(s, qi, start, norms);
+    }
+
+    df /= edgesPerSegment_;
+
+    // cout << "End Hair DF" << endl;
+
+    return -df;
 }
 
 Vector3d HairInstance::calculateNi(Vector3d n0, Vector3d n1, Vector3d n2, Vector3d omega, int segment, double s, double darbouxNorm, int i)
@@ -443,10 +605,10 @@ void HairInstance::render3D(double scale, double radius)
     // glColor3f(color_[0], color_[1], color_[2]);
 
     glBegin(GL_LINES);
-    cout << "ROWS: " << verts_.rows() << endl;
-    cout << verts_(0, 0) << " " << verts_(0, 1) << " " << verts_(0, 2) << endl;
-    cout << verts_(1, 0) << " " << verts_(1, 1) << " " << verts_(1, 2) << endl;
-    cout << verts_(2, 0) << " " << verts_(2, 1) << " " << verts_(2, 2) << endl;
+    // cout << "ROWS: " << verts_.rows() << endl;
+    // cout << verts_(0, 0) << " " << verts_(0, 1) << " " << verts_(0, 2) << endl;
+    // cout << verts_(1, 0) << " " << verts_(1, 1) << " " << verts_(1, 2) << endl;
+    // cout << verts_(2, 0) << " " << verts_(2, 1) << " " << verts_(2, 2) << endl;
     for (int i = 0; i < verts_.rows()-1; i++)
     {
         glVertex3d(verts_(i, 0), verts_(i, 1), verts_(i, 2));
@@ -576,9 +738,9 @@ void HairInstance::interpolateTwo()
 
     // exit(0);
 
-    cout << "BARYS: " << baryOne << " " << baryTwo << endl;
+    // cout << "BARYS: " << baryOne << " " << baryTwo << endl;
 
-    cout << "POS: " << pos_[0] << " " << pos_[1] << " " << pos_[2] << endl;
+    // cout << "POS: " << pos_[0] << " " << pos_[1] << " " << pos_[2] << endl;
 }
 
 void HairInstance::interpolateThree()
