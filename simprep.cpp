@@ -39,7 +39,7 @@ void SimPrep::setupInterpExample(vector<HairInstance*>& guideStrands)
 void SimPrep::setupSingleStrandExample(vector<HairInstance*>& guideStrands)
 {
     int eps = 100;
-    int nos = 1;
+    int nos = 2;
     double length = 1.0;
     Vector3d startPos = Vector3d(-0.5, 0.0, 0.0);
     Matrix3d normals;
@@ -47,9 +47,9 @@ void SimPrep::setupSingleStrandExample(vector<HairInstance*>& guideStrands)
     normals.row(1) = Vector3d(0.0, 1.0, 0.0);
     normals.row(2) = Vector3d(0.0, 0.0, 1.0);
     VectorXd curves;
-    curves.resize(3);
+    curves.resize(6);
     curves.segment<3>(0) = Vector3d(0.0, 0.0, 1.0);
-    // curves.segment<3>(3) = Vector3d(0.0, 0.0, -2.0);
+    curves.segment<3>(3) = Vector3d(0.0, 0.0, -2.0);
 
     guideStrands.push_back(new HairInstance(curves, startPos, normals, eps, nos, length));
 }

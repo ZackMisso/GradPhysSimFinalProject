@@ -249,6 +249,8 @@ void HairInstance::reconstructHair()
     // L is in terms of the segment
     // s is distance between 0 and L for segment
 
+    cout << "IN RECONSTRUCT" << endl;
+
     Vector3d lastPos = pos_;
     verts_.row(0) = lastPos;
 
@@ -268,9 +270,13 @@ void HairInstance::reconstructHair()
 
         if (i != 0)
         {
-            n0 = calculateNi(n0, n1, n2, omega, i, lengthPerSegment_, darbouxNorm, 0);
-            n1 = calculateNi(n0, n1, n2, omega, i, lengthPerSegment_, darbouxNorm, 1);
-            n2 = calculateNi(n0, n1, n2, omega, i, lengthPerSegment_, darbouxNorm, 2);
+            Vector3d newN0 = calculateNi(n0, n1, n2, omega, i, lengthPerSegment_, darbouxNorm, 0);
+            Vector3d newN1 = calculateNi(n0, n1, n2, omega, i, lengthPerSegment_, darbouxNorm, 1);
+            Vector3d newN2 = calculateNi(n0, n1, n2, omega, i, lengthPerSegment_, darbouxNorm, 2);
+
+            n0 = newN0;
+            n1 = newN1;
+            n2 = newN2;
         }
 
         initialDarboux = curvature[0] * n0 + curvature[1] * n1 + curvature[2] * n2;
@@ -299,7 +305,74 @@ void HairInstance::reconstructHair()
 
         lastPos = nextPos;
     }
+
+    cout << "LEAVING RECONSTRUCT" << endl;
 }
+
+void HairInstance::calculateNewInitialConditions(Vector3d q, Vector3d start, Matrix3d n, Vector3d &newStart, Matrix3d &newNorms)
+{
+    newStart.setZero();
+    newNorms.setZero();
+
+    Vector3d n0 = n.row(0);
+    Vector3d n1 = n.row(1);
+    Vector3d n2 = n.row(2);
+
+    Vector3d initialDarboux;
+    double darbouxNorm;
+    Vector3d omega;
+
+    // for (int i = 0; i < numberOfSegments_; i++)
+    // {
+        // Vector3d curvature = curvatures_.segment<3>(i * 3);
+
+        // if (i != 0)
+        // {
+            // n0 = calculateNi(n0, n1, n2, omega, i, lengthPerSegment_, darbouxNorm, 0);
+            // n1 = calculateNi(n0, n1, n2, omega, i, lengthPerSegment_, darbouxNorm, 1);
+            // n2 = calculateNi(n0, n1, n2, omega, i, lengthPerSegment_, darbouxNorm, 2);
+        // }
+
+    initialDarboux = q[0] * n0 + q[1] * n1 + q[2] * n2;
+    darbouxNorm = initialDarboux.norm();
+    omega = initialDarboux / darbouxNorm;
+
+    Vector3d nextPos;
+
+    for (int j = 0; j < edgesPerSegment_; j++)
+    {
+        double s = lengthPerEdge_*(j+1);
+        Vector3d currentN0 = n0;
+
+        Vector3d par = para(currentN0, omega);
+        Vector3d per = perp(currentN0, omega);
+        Vector3d cros = omega.cross(per);
+
+        Vector3d firstTerm = newStart;
+        Vector3d secondTerm = par * s;
+        Vector3d thirdTerm = per * ( sin(darbouxNorm * s) / darbouxNorm );
+        Vector3d fourthTerm = cros * ( ( 1 - cos(darbouxNorm * s) ) / darbouxNorm );
+        nextPos = firstTerm + secondTerm + thirdTerm + fourthTerm;
+    }
+
+    Vector3d newN0 = calculateNi(n0, n1, n2, omega, -1, lengthPerSegment_, darbouxNorm, 0);
+    Vector3d newN1 = calculateNi(n0, n1, n2, omega, -1, lengthPerSegment_, darbouxNorm, 1);
+    Vector3d newN2 = calculateNi(n0, n1, n2, omega, -1, lengthPerSegment_, darbouxNorm, 2);
+
+    newStart = nextPos;
+    newNorms.row(0) = newN0;
+    newNorms.row(1) = newN1;
+    newNorms.row(2) = newN2;
+}
+
+// Matrix3d HairInstance::calculateNewNorms(Vector3d q, Vector3d start, Matrix3d n)
+// {
+//     Matrix3d newNorms;
+
+//     // to be implemented
+
+//     return newNorms;
+// }
 
 Vector3d HairInstance::rsh(double s, Vector3d q, Vector3d start, Matrix3d n)
 {
@@ -366,13 +439,13 @@ Matrix3d HairInstance::drsh(double s, Vector3d q, Vector3d start, Matrix3d n)
     thirdTerm.setZero();
 
     // cout << "BEFORE FIRST TERM" << endl;
-    firstTerm = per * (darbouxNorm * cos(darbouxNorm * s) * s * q.transpose() / darbouxNorm - sin(darbouxNorm * s) * s * q.transpose() / darbouxNorm) / (darbouxNorm * darbouxNorm);
+    firstTerm = per * (darbouxNorm * cos(darbouxNorm * s) * s * q.transpose() / darbouxNorm - sin(darbouxNorm * s) * q.transpose() / darbouxNorm) / (darbouxNorm * darbouxNorm);
 
     // cout << "Before Second Term" << endl;
     secondTerm = VectorMath::crossProductMatrix(per * ((1 - cos(darbouxNorm * s)) / darbouxNorm)) * (n.transpose() / darbouxNorm - initialDarboux * q.transpose() / (darbouxNorm * darbouxNorm * darbouxNorm));
 
     // cout << "Before Third Term" << endl;
-    thirdTerm = VectorMath::crossProductMatrix(omega) * per * ( ( darbouxNorm * sin(darbouxNorm * s) * s * q.transpose() / darbouxNorm - (1 - cos(darbouxNorm * s)) * s * q.transpose() / darbouxNorm) / (darbouxNorm * darbouxNorm) );
+    thirdTerm = VectorMath::crossProductMatrix(omega) * per * ( ( darbouxNorm * sin(darbouxNorm * s) * s * q.transpose() / darbouxNorm - (1 - cos(darbouxNorm * s)) * q.transpose() / darbouxNorm) / (darbouxNorm * darbouxNorm) );
 
     dr = firstTerm - secondTerm + thirdTerm;
 
@@ -387,7 +460,8 @@ Vector3d HairInstance::hairF(int j, Vector3d qip1, Vector3d qi, Vector3d qim1, V
     f.setZero();
 
     double M = 1.0;
-    double G = 9.81;
+    // double G = 9.81;
+    double G = 0.01;
     double h = 0.001; // change!!!
 
     Vector3d firstTerm;
@@ -419,7 +493,8 @@ Vector3d HairInstance::hairF(int j, Vector3d qip1, Vector3d qi, Vector3d qim1, V
         thirdTerm += M * G * drsh(s, qi, start, norms).row(1); // maybe 2
     }
 
-    secondTerm = qi - Vector3d(0.0, 0.0, -2.0); // - qn * (EI)
+    secondTerm = qi - Vector3d(0.0, 0.0, -0.3); // - qn * (EI)
+    // secondTerm.setZero();
 
     f = fourthTerm - firstTerm - secondTerm - thirdTerm;
 
@@ -446,11 +521,11 @@ Matrix3d HairInstance::hairdF(int j, Vector3d qip1, Vector3d qi, Vector3d qim1, 
 
         // cout << "Before Calc DF" << endl;
 
-        cout << "DRSH i1:" << endl;
-        cout << (drsh(s, qip1, start, norms) / h) << endl;
+        // cout << "DRSH i1:" << endl;
+        // cout << (drsh(s, qip1, start, norms) / h) << endl;
 
-        cout << "DRSH i:" << endl;
-        cout << (drsh(s, qi, start, norms) / h) << endl;
+        // cout << "DRSH i:" << endl;
+        // cout << (drsh(s, qi, start, norms) / h) << endl;
 
         df += (drsh(s, qip1, start, norms) / h).transpose() * drsh(s, qi, start, norms);
     }

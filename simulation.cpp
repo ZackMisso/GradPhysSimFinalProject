@@ -66,6 +66,8 @@ void Simulation::takeSimulationStep()
 
     numericalIntegration(q, qprev, v);
 
+    // cout << "HAIR " << hairs_[0]->verts_.row(10);
+
     renderLock_.lock();
     {
         unbuildConfiguration(q, v);
@@ -93,8 +95,10 @@ void Simulation::numericalIntegration(Eigen::VectorXd &q, Eigen::VectorXd &qprev
     computeForceAndHessian(q, qprev, F, H);
 
     VectorXd guessFull = q;
+    cout << "STARTING numericalIntegration" << endl;
 
     for (int i = 0; i < hairs_.size(); i++)
+    // for (int i = 0; i < 1; i++)
     {
         // numericalIntegration on each individual curvature
         Matrix3d norms = hairs_[i]->normals_;
@@ -124,33 +128,46 @@ void Simulation::numericalIntegration(Eigen::VectorXd &q, Eigen::VectorXd &qprev
             while (f.norm() > params_.NewtonTolerance && iterations < params_.NewtonMaxIters)
             {
                 // cout << "Setting B" << endl;
-                if (iterations == 2)
-                {
-                    exit(1);
-                }
+                // if (iterations == 2)
+                // {
+                //     exit(1);
+                // }
                 B = hairs_[i]->hairdF(j, qip1, qi, qim1, start, norms);
-                cout << "QI:" << endl;
-                cout << qi << endl;
-                cout << "QIP1:" << endl;
-                cout << qip1 << endl;
-                cout << "F:" << endl;
-                cout << f << endl;
-                cout << "dF:" << endl;
-                cout << B << endl;
+                B(0, 0) += 1.0;
+                B(1, 1) += 1.0;
+                B(2, 2) += 1.0;
+                // cout << "QI:" << endl;
+                // cout << qi << endl;
+                // cout << "QIP1:" << endl;
+                // cout << qip1 << endl;
+                // cout << "F:" << endl;
+                // cout << f << endl;
+                // cout << "dF:" << endl;
+                // cout << B << endl;
                 // cout << "Before Compute Solver" << endl;
                 solver.compute(B);
                 dq = solver.solve(f);
-                cout << "dq in newton\n" << dq << endl;
-                qip1 = qip1 + dq;
+                cout << "dq in newton\n" << dq.norm() << endl;
+                qip1 = qip1 - dq;
 
                 f = hairs_[i]->hairF(j, qip1, qi, qim1, start, norms);
 
                 iterations++;
             }
 
-            exit(1);
+            // Vector3d n0 = norms.row(0);
+            // Vector3d n1 = norms.row(1);
+            // Vector3d n2 = norms.row(2);
 
-            // guessFull.segment<3>(j * 3) = qip1;
+            // norms.row(0) = calculateNi(n0, n1, n2, omega, i, lengthPerSegment_, darbouxNorm, 0);
+            // norms.row(1) = calculateNi(n0, n1, n2, omega, i, lengthPerSegment_, darbouxNorm, 1);
+            // nroms.row(2) = calculateNi(n0, n1, n2, omega, i, lengthPerSegment_, darbouxNorm, 2);
+
+            hairs_[i]->calculateNewInitialConditions(qi, start, norms, start, norms);
+
+            // exit(1);
+
+            guessFull.segment<3>(j * 3) = qip1;
         }
     }
 
