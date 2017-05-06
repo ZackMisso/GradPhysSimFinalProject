@@ -26,7 +26,7 @@ SimParameters::SimParameters()
     reset = false;
 
     gravity = 9.81;
-    stiffness = 1.0;
+    stiffness = 0.1;
     hairLength = 1.0;
     segments = 2;
     subsegments = 100;
