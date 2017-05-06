@@ -15,14 +15,34 @@ GLRenderer::~GLRenderer()
 
 void GLRenderer::render(SimParameters simparams, std::vector<HairInstance*> guideHairs, std::vector<HairInstance*> interpHairs, std::vector<RigidBodyInstance*> bodies)
 {
-    for(int i = 0; i < guideHairs.size(); i++)
+    if (!simparams.showSegments)
     {
-        renderHairStrand(guideHairs[i]);
+        for(int i = 0; i < guideHairs.size(); i++)
+        {
+            renderHairStrand(guideHairs[i]);
+        }
+        for(int i = 0; i < interpHairs.size(); i++)
+        {
+            renderHairStrand(interpHairs[i]);
+        }
     }
-    // for(int i = 0; i < interpHairs.size(); i++)
-    // {
-    //     renderHairStrand(interpHairs[i]);
-    // }
+    else
+    {
+        for(int i = 0; i < guideHairs.size(); i++)
+        {
+            for (int j = 0; j < guideHairs[i]->getNumberOfSegments(); j++)
+            {
+                renderHairStrandSegment(guideHairs[i], j, guideHairs[i]->getNumberOfSegments());
+            }
+        }
+        for(int i = 0; i < interpHairs.size(); i++)
+        {
+            for (int j = 0; j < interpHairs[i]->getNumberOfSegments(); j++)
+            {
+                renderHairStrandSegment(interpHairs[i], j, interpHairs[i]->getNumberOfSegments());
+            }
+        }
+    }
 }
 
 void GLRenderer::renderFromBake(std::vector<HairInstance*> guideHairs, std::vector<HairInstance*> interpHairs, std::vector<RigidBodyInstance*> bodies, int iteration)
@@ -99,7 +119,7 @@ void GLRenderer::renderHairCylinder(HairInstance* hair)
     // }
 }
 
-void GLRenderer::renderHairStrandSegment(HairInstance* hair, int segment)
+void GLRenderer::renderHairStrandSegment(HairInstance* hair, int segment, int maxSegment)
 {
     //glShadeModel(GL_FLAT);
     //glEnable(GL_LIGHTING);
@@ -111,18 +131,21 @@ void GLRenderer::renderHairStrandSegment(HairInstance* hair, int segment)
 
     //glColor4d(hair->color_[0], hair->color_[1], hair->color_[2], 1.0);
 
+    glColor4d(hair->color_[0] / (maxSegment / (segment + 1)) + 0.1, hair->color_[1] / (maxSegment / (segment + 1)) + 0.1, hair->color_[2] / (maxSegment / (segment + 1)) + 0.1, 1.0);
+
     glLineWidth(2.0);
 
     glBegin(GL_LINES);
-    for (int i = segment * eps; i < segment * (eps + 1); i++)
+    for (int i = segment * eps; i < (segment + 1) * (eps); i++)
     {
+        // cout << "I: " << i << endl;
         glVertex3d(hair->verts_(i, 0), hair->verts_(i, 1), hair->verts_(i, 2));
         glVertex3d(hair->verts_(i + 1, 0), hair->verts_(i + 1, 1), hair->verts_(i + 1, 2));
     }
     glEnd();
 }
 
-void GLRenderer::renderHairCylinderSegment(HairInstance * hair, int segment)
+void GLRenderer::renderHairCylinderSegment(HairInstance * hair, int segment, int maxSegment)
 {
     // to be implemented
 }

@@ -74,6 +74,8 @@ void MainWindow::setParametersFromUI()
 
     reset_ = false;
 
+    params.showSegments = renderingSegments_;
+
     // params.penaltyStiffness = ui->penaltyStiffnessEdit->text().toDouble();
 
     // params.activeForces = 0;
@@ -175,6 +177,8 @@ void MainWindow::setUIFromParameters(const SimParameters &params)
     ui->hairLengthBox->setText(QString::number(params.hairLength));
     ui->segmentsBox->setText(QString::number(params.segments));
     ui->subSegmentsBox->setText(QString::number(params.subsegments));
+
+    ui->showSegmentsCheck->setChecked(params.showSegments);
 
     // ui->penaltyStiffnessEdit->setText(QString::number(params.penaltyStiffness));
 
@@ -481,5 +485,11 @@ void MainWindow::on_stiffnessBox_editingFinished()
 
 void MainWindow::on_gravityBox_editingFinished()
 {
+    setParametersFromUI();
+}
+
+void MainWindow::on_showSegmentsCheck_toggled(bool checked)
+{
+    renderingSegments_ = checked;
     setParametersFromUI();
 }

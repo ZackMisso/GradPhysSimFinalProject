@@ -119,6 +119,8 @@ private slots:
 
     void on_gravityBox_editingFinished();
 
+    void on_showSegmentsCheck_toggled(bool checked);
+
 private:
     Controller &cont_;
     Ui::MainWindow *ui;
@@ -131,6 +133,8 @@ private:
     bool sphereExample_;
     bool headExample_;
     bool reset_;
+
+    bool renderingSegments_;
 
     void setParametersFromUI();
 };

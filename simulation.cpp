@@ -23,6 +23,7 @@ void Simulation::render(bool is3D)
 {
     if (renderLock_.tryLock())
     {
+        cout << "RENDER" << endl;
         renderer->render(params_, hairs_, interpHairs_, bodies_);
         // for (int i = 0; i < hairs_.size(); i++)
         // {
@@ -72,15 +73,16 @@ void Simulation::takeSimulationStep()
 
     // cout << "HAIR " << hairs_[0]->verts_.row(10);
 
-    renderLock_.lock();
-    {
+    // renderLock_.lock();
+    // {
         unbuildConfiguration(q, v);
         reconstruction();
 
         cleanInterpolations();
         createInterpolations();
-    }
-    renderLock_.unlock();
+    // }
+    // renderLock_.unlock();
+    // render(true);
 
     time_ += params_.timeStep;
 }
@@ -92,6 +94,7 @@ void Simulation::numericalIntegration(Eigen::VectorXd &q, Eigen::VectorXd &qprev
     SparseMatrix<double> Minv;
 
     computeMassInverse(Minv); // change for hair
+    // cout << "START" << endl;
 
     // so we can explicitly constrain length during reconstruction
     // so all we have to do is calculate the change in curvature then reconstruct
@@ -102,6 +105,9 @@ void Simulation::numericalIntegration(Eigen::VectorXd &q, Eigen::VectorXd &qprev
     // cout << "STARTING numericalIntegration" << endl;
 
     int total = 0;
+
+    // cout << "HAIRS:" << endl;
+    // cout << hairs_[0]->curvatures_ << endl;
 
     for (int i = 0; i < hairs_.size(); i++)
     // for (int i = 0; i < 1; i++)
@@ -178,6 +184,8 @@ void Simulation::numericalIntegration(Eigen::VectorXd &q, Eigen::VectorXd &qprev
             total += 3;
         }
     }
+
+    // cout << "STOP" << endl;
 
     cout << "FINSIEDH" << endl;
 

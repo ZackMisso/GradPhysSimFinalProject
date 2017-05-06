@@ -18,6 +18,6 @@ public:
 
     void renderHairStrand(HairInstance* hair);
     void renderHairCylinder(HairInstance* hair);
-    void renderHairStrandSegment(HairInstance* hair, int segment);
-    void renderHairCylinderSegment(HairInstance* hair, int segment);
+    void renderHairStrandSegment(HairInstance* hair, int segment, int maxSegment);
+    void renderHairCylinderSegment(HairInstance* hair, int segment, int maxSegment);
 };

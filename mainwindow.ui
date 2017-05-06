@@ -355,6 +355,32 @@
       </property>
      </widget>
     </widget>
+    <widget class="QGroupBox" name="groupBox_2">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>300</y>
+       <width>411</width>
+       <height>131</height>
+      </rect>
+     </property>
+     <property name="title">
+      <string>Rendering</string>
+     </property>
+     <widget class="QCheckBox" name="showSegmentsCheck">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>30</y>
+        <width>131</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>ShowSegments</string>
+      </property>
+     </widget>
+    </widget>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
