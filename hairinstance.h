@@ -4,6 +4,7 @@
 #include <string>
 #include <Eigen/Core>
 #include <vector>
+#include "simparameters.h"
 
 class HairInstance
 {
@@ -30,8 +31,8 @@ public:
     // Eigen::Matrix3d calculateNewNorms(Eigen::Vector3d q, Eigen::Vector3d start, Eigen::Matrix3d n);
     Eigen::Vector3d rsh(double s, Eigen::Vector3d q, Eigen::Vector3d start, Eigen::Matrix3d n);
     Eigen::Matrix3d drsh(double s, Eigen::Vector3d q, Eigen::Vector3d start, Eigen::Matrix3d n);
-    Eigen::Vector3d hairF(int j, Eigen::Vector3d qip1, Eigen::Vector3d qi, Eigen::Vector3d qim1, Eigen::Vector3d start, Eigen::Matrix3d norms);
-    Eigen::Matrix3d hairdF(int j, Eigen::Vector3d qip1, Eigen::Vector3d qi, Eigen::Vector3d qim1, Eigen::Vector3d start, Eigen::Matrix3d norms);
+    Eigen::Vector3d hairF(int j, Eigen::Vector3d qip1, Eigen::Vector3d qi, Eigen::Vector3d qim1, Eigen::Vector3d start, Eigen::Matrix3d norms, SimParameters params);
+    Eigen::Matrix3d hairdF(int j, Eigen::Vector3d qip1, Eigen::Vector3d qi, Eigen::Vector3d qim1, Eigen::Vector3d start, Eigen::Matrix3d norms, SimParameters params);
 
     int getNumberOfDofs() const;
     int getNumberOfSegments() const { return numberOfSegments_; }

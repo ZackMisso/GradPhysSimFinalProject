@@ -49,6 +49,12 @@ void Controller::updateParameters(SimParameters params)
 
 void Controller::render(bool is3D)
 {
+    if (params_.reset)
+    {
+        params_.simRunning = false;
+        params_.reset = false;
+        clearScene();
+    }
     sim_->render(is3D);
 }
 
@@ -67,8 +73,16 @@ void Controller::mouseClicked(double x, double y)
 
 void Controller::simTick()
 {
+    if (params_.reset)
+    {
+        params_.simRunning = false;
+        params_.reset = false;
+        clearScene();
+    }
     if(params_.simRunning)
+    {
         sim_->takeSimulationStep();
+    }
 }
 
 void Controller::getCameraInfo(int hair, Eigen::Vector3d &center, double &scale)

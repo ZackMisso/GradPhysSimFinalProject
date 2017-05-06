@@ -454,15 +454,16 @@ Matrix3d HairInstance::drsh(double s, Vector3d q, Vector3d start, Matrix3d n)
     return dr;
 }
 
-Vector3d HairInstance::hairF(int j, Vector3d qip1, Vector3d qi, Vector3d qim1, Vector3d start, Matrix3d norms)
+Vector3d HairInstance::hairF(int j, Vector3d qip1, Vector3d qi, Vector3d qim1, Vector3d start, Matrix3d norms, SimParameters params)
 {
     Vector3d f;
     f.setZero();
 
-    double M = 0.01;
+    double M = 0.000001;
     // double G = 9.81;
-    double G = 0.1;
-    double h = 0.1; // change!!!
+    double G = params.gravity;
+    double h = params.timeStep; // change!!!
+    double k = params.stiffness;
 
     Vector3d firstTerm;
     Vector3d secondTerm;
@@ -493,27 +494,28 @@ Vector3d HairInstance::hairF(int j, Vector3d qip1, Vector3d qi, Vector3d qim1, V
         thirdTerm += M * G * drsh(s, qi, start, norms).row(1); // maybe 2
     }
 
-    secondTerm = qi - initialCurvatures_.segment<3>(j * 3); // - qn * (EI)
+    secondTerm = (qi - initialCurvatures_.segment<3>(j * 3)) * k; // - qn * (EI)
     // secondTerm.setZero();
 
     f = fourthTerm - firstTerm - secondTerm - thirdTerm;
 
     f /= edgesPerSegment_;
+    // f *= h;
 
     // cout << "Finished HAIR F" << endl;
 
     return f;
 }
 
-Matrix3d HairInstance::hairdF(int j, Vector3d qip1, Vector3d qi, Vector3d qim1, Vector3d start, Matrix3d norms)
+Matrix3d HairInstance::hairdF(int j, Vector3d qip1, Vector3d qi, Vector3d qim1, Vector3d start, Matrix3d norms, SimParameters params)
 {
     Matrix3d df;
     df.setZero();
 
     // cout << "IN HAIR DF" << endl;
 
-    double M = 1.0;
-    double h = 0.001;
+    double M = 0.000001;
+    double h = params.timeStep;
 
     for (int i = 0; i < edgesPerSegment_; i++)
     {
@@ -531,6 +533,7 @@ Matrix3d HairInstance::hairdF(int j, Vector3d qip1, Vector3d qi, Vector3d qim1, 
     }
 
     df /= edgesPerSegment_;
+    // df *= h;
 
     // cout << "End Hair DF" << endl;
 

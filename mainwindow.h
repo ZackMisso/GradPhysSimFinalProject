@@ -99,11 +99,38 @@ private slots:
 
     // void on_flexibleRodButton_clicked();
 
+    void on_singleStrandExButton_clicked();
+
+    void on_interpolationExampleButton_clicked();
+
+    void on_headExampleButton_clicked();
+
+    void on_bundleExampleButton_clicked();
+
+    void on_sphereExampleButton_clicked();
+
+    void on_subSegmentsBox_editingFinished();
+
+    void on_segmentsBox_editingFinished();
+
+    void on_hairLengthBox_editingFinished();
+
+    void on_stiffnessBox_editingFinished();
+
+    void on_gravityBox_editingFinished();
+
 private:
     Controller &cont_;
     Ui::MainWindow *ui;
     bool simRunning_;
     QTimer renderTimer_;
+
+    bool singleStrandExample_;
+    bool interpolationExample_;
+    bool bundleExample_;
+    bool sphereExample_;
+    bool headExample_;
+    bool reset_;
 
     void setParametersFromUI();
 };

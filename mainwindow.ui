@@ -51,7 +51,7 @@
        <x>10</x>
        <y>0</y>
        <width>421</width>
-       <height>241</height>
+       <height>191</height>
       </rect>
      </property>
      <property name="title">
@@ -157,17 +157,202 @@
            <string>Start Simulation</string>
           </property>
          </widget>
-         <zorder>timeStepLabel</zorder>
-         <zorder>newtonTolLabel</zorder>
-         <zorder>newtonMaxItersLabel</zorder>
-         <zorder>timeStepEdit</zorder>
-         <zorder>newtonTolEdit</zorder>
-         <zorder>newtonMaxItersEdit</zorder>
-         <zorder>IntegratorBox</zorder>
-         <zorder>startSimulationButton</zorder>
+         <widget class="QLineEdit" name="gravityBox">
+          <property name="geometry">
+           <rect>
+            <x>280</x>
+            <y>30</y>
+            <width>113</width>
+            <height>25</height>
+           </rect>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label">
+          <property name="geometry">
+           <rect>
+            <x>200</x>
+            <y>30</y>
+            <width>67</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Gravity</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_2">
+          <property name="geometry">
+           <rect>
+            <x>200</x>
+            <y>50</y>
+            <width>67</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Stiffness</string>
+          </property>
+         </widget>
+         <widget class="QLineEdit" name="stiffnessBox">
+          <property name="geometry">
+           <rect>
+            <x>280</x>
+            <y>50</y>
+            <width>113</width>
+            <height>25</height>
+           </rect>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_3">
+          <property name="geometry">
+           <rect>
+            <x>200</x>
+            <y>70</y>
+            <width>81</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>HairLength</string>
+          </property>
+         </widget>
+         <widget class="QLineEdit" name="hairLengthBox">
+          <property name="geometry">
+           <rect>
+            <x>280</x>
+            <y>70</y>
+            <width>113</width>
+            <height>25</height>
+           </rect>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_4">
+          <property name="geometry">
+           <rect>
+            <x>200</x>
+            <y>100</y>
+            <width>71</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Segments</string>
+          </property>
+         </widget>
+         <widget class="QLineEdit" name="segmentsBox">
+          <property name="geometry">
+           <rect>
+            <x>280</x>
+            <y>100</y>
+            <width>113</width>
+            <height>25</height>
+           </rect>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_5">
+          <property name="geometry">
+           <rect>
+            <x>200</x>
+            <y>130</y>
+            <width>101</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>SubSegments</string>
+          </property>
+         </widget>
+         <widget class="QLineEdit" name="subSegmentsBox">
+          <property name="geometry">
+           <rect>
+            <x>300</x>
+            <y>130</y>
+            <width>91</width>
+            <height>25</height>
+           </rect>
+          </property>
+         </widget>
         </widget>
        </item>
       </layout>
+     </widget>
+    </widget>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>190</y>
+       <width>411</width>
+       <height>111</height>
+      </rect>
+     </property>
+     <property name="title">
+      <string>Examples</string>
+     </property>
+     <widget class="QPushButton" name="singleStrandExButton">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>20</y>
+        <width>171</width>
+        <height>27</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>SingleStrandExample</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="interpolationExampleButton">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>50</y>
+        <width>171</width>
+        <height>27</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>InterpolationExample</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="bundleExampleButton">
+      <property name="geometry">
+       <rect>
+        <x>180</x>
+        <y>20</y>
+        <width>171</width>
+        <height>27</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>BundleExample</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="sphereExampleButton">
+      <property name="geometry">
+       <rect>
+        <x>180</x>
+        <y>50</y>
+        <width>171</width>
+        <height>27</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>SphereExample</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="headExampleButton">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>80</y>
+        <width>171</width>
+        <height>27</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>HeadExample</string>
+      </property>
      </widget>
     </widget>
    </widget>

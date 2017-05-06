@@ -120,7 +120,7 @@ void Simulation::numericalIntegration(Eigen::VectorXd &q, Eigen::VectorXd &qprev
 
             int iterations = 0;
 
-            Vector3d f = hairs_[i]->hairF(j, qip1, qi, qim1, start, norms);
+            Vector3d f = hairs_[i]->hairF(j, qip1, qi, qim1, start, norms, params_);
 
             // cout << "FNORM: " << f.norm() << endl;
             // cout << "F:" << endl;
@@ -134,7 +134,7 @@ void Simulation::numericalIntegration(Eigen::VectorXd &q, Eigen::VectorXd &qprev
                 // {
                 //     exit(1);
                 // }
-                B = hairs_[i]->hairdF(j, qip1, qi, qim1, start, norms);
+                B = hairs_[i]->hairdF(j, qip1, qi, qim1, start, norms, params_);
                 B(0, 0) += 1.0;
                 B(1, 1) += 1.0;
                 B(2, 2) += 1.0;
@@ -152,7 +152,7 @@ void Simulation::numericalIntegration(Eigen::VectorXd &q, Eigen::VectorXd &qprev
                 cout << "dq in newton " << dq.norm() << endl;
                 qip1 = qip1 - dq;
 
-                f = hairs_[i]->hairF(j, qip1, qi, qim1, start, norms);
+                f = hairs_[i]->hairF(j, qip1, qi, qim1, start, norms, params_);
 
                 iterations++;
             }
@@ -231,9 +231,26 @@ void Simulation::clearScene()
     // // cout << "WHHHAAATTT" << endl;
     // hairs_.push_back(singleStrand);
 
-    SimPrep::setupSingleStrandExample(hairs_);
-    // SimPrep::setupInterpExample(hairs_);
-    // SimPrep::setupBundleExample(hairs_);
+    if (params_.singleStrandExample)
+    {
+        SimPrep::setupSingleStrandExample(hairs_);
+    }
+    if (params_.interpolationExample)
+    {
+        SimPrep::setupInterpExample(hairs_);
+    }
+    if (params_.bundleExample)
+    {
+        SimPrep::setupBundleExample(hairs_);
+    }
+    if (params_.sphereExample)
+    {
+        SimPrep::setupSphereExample(hairs_);
+    }
+    if (params_.headExample)
+    {
+        SimPrep::setupHeadExample(hairs_);
+    }
     createInterpolations();
 
     renderLock_.unlock();

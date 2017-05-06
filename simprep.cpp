@@ -84,7 +84,12 @@ void SimPrep::setupBundleExample(std::vector<HairInstance*>& guideStrands)
     curves.segment<3>(0) = Vector3d(0.0, 0.0, 1.0);
     curves.segment<3>(3) = Vector3d(0.0, 0.0, -2.0);
 
-    guideStrands.push_back(new HairInstance(curves, startPos, normals, eps, nos, length));
+    HairInstance* one = new HairInstance(curves, startPos, normals, eps, nos, length);
+    one->initialCurvatures_.resize(6);
+    one->initialCurvatures_.segment<3>(0) = Vector3d(0.0, 0.0, -0.5);
+    one->initialCurvatures_.segment<3>(3) = Vector3d(0.0, 0.0, -1.0);
+
+    guideStrands.push_back(one);
 
     int eps2 = 100;
     int nos2 = 2;
@@ -99,7 +104,12 @@ void SimPrep::setupBundleExample(std::vector<HairInstance*>& guideStrands)
     curves2.segment<3>(0) = Vector3d(0.0, 0.0, -1.0);
     curves2.segment<3>(3) = Vector3d(0.0, 0.0, -3.0);
 
-    guideStrands.push_back(new HairInstance(curves2, startPos2, normals2, eps2, nos2, length2));
+    HairInstance* two = new HairInstance(curves2, startPos2, normals2, eps2, nos2, length2);
+    two->initialCurvatures_.resize(6);
+    two->initialCurvatures_.segment<3>(0) = Vector3d(0.0, 0.0, -2.0);
+    two->initialCurvatures_.segment<3>(3) = Vector3d(0.0, 0.0, -4.0);
+
+    guideStrands.push_back(two);
 }
 
 void SimPrep::setupSphereExample(vector<HairInstance*>& guideStrands)
