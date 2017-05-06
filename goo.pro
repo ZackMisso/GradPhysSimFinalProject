@@ -35,7 +35,9 @@ SOURCES += main.cpp\
     glrenderer.cpp \
     glsrenderer.cpp \
     raytracer.cpp \
-    rigidbodyinstance.cpp
+    rigidbodyinstance.cpp \
+    bakedhair.cpp \
+    simprep.cpp
 
 HEADERS  += mainwindow.h \
     glpanel.h \
@@ -49,7 +51,9 @@ HEADERS  += mainwindow.h \
     glrenderer.h \
     glsrenderer.h \
     raytracer.h \
-    rigidbodyinstance.h
+    rigidbodyinstance.h \
+    bakedhair.h \
+    simprep.h
 
 FORMS    += mainwindow.ui
 
