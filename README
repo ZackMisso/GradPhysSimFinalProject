@@ -1,37 +1,30 @@
-Milestone 1 Submission
-
 Sumit Sinha
 Zack Misso
 
-Our Project: Psuedo-Realistic Hair Simulation
+Final Report is in report.pdf
 
-What we claimed to have finished:
+Instructions on How to Run:
 
-Solve the equations of motion for hair segments
-Implement Hair Reconstruction from the curvatures of hair segments
-Implement the equations of motion
+qmake && make clean && make && ./goo
 
-What we did:
+What You Should See:
 
-We worked towards implementing a hair simulation based off of the Super Helices paper.
-The paper claimed to represent hair as a collection of super helic segments.
-Every segment can have a different, but constant, curvature. This allows a hair sim
-to represent the DoF of a system of hair strands as the curvatures of the individual
-segments of hair. A single strand of hair can have multiple segments so the total
-number of DoFs is 3n where n is the number of segments.
+There are 3 working views:
+    Single Strand Example: displays a single strand moving due to gravity and the restoring force
+    Interpolation Example: simulates two hair strands under gravity and interpolates other hair strands to fit between
+    Bundle Example: simulates a bundle of hair which is just two hair strands with the same start position with interpolated hair strands in between
+    Head Example: not implemented by the time of submission
+    Sphere Example: not implemented by the time of submission
 
-We derived the equations of motion of hair segments in terms of their curvatures.
-Those calculations are in the pdf attached to this submission.
+You can change the stiffness (EI) of the hair which damps the restoring force
+You can change the amount of gravity
+You can change the time step
+You can change the Newtons tolerance and Newtons iterations
+The other values that are available to be changed do not have any effect
+You can have the hair strands render out the individual segments by checking the show segments box
 
-We implemented reconstruction of a hair strand based off of the curvatures of its
-segments.
+This submission contains all of the mathematics for our hair simulations, however, we are still working on our examples, rendering code, and a
+baking system to make the simulation run quickly for the final demonstration on May 15th.
 
-We implemented a visual representation of our reconstruction and hair dynamics. We
-have not yet implemented the equations of motion in code. The hair strand that can
-be seen in the simulation contains two segments. Each segment's curvatures are
-varied with respect to time based on arbitrary functions of our choosing for demo
-purposes.
-
-Every time step the curvatures are updated and the hair strand is reconstructed.
-
-To compile and run the code: qmake && make clean && make && ./goo
+All the hair strands in our examples for this submission contain two segments of equal length and each segment is made of 100 sub segments. Our code supports
+hair strands of various lengths and segments of various lengths. But those will be implemented in time for the final demonstration.
