@@ -31,6 +31,7 @@ public:
     Eigen::MatrixX3d curvatures_;
     Eigen::MatrixX3d prev_curvatures_;
     Eigen::MatrixX3d curvatures_dot_;
+    Eigen::Vector3d color_;
     // use the bottom two for rendering later
     Eigen::MatrixX3d verts_;
     // Eigen::MatrixX3d verts_dot;
@@ -53,7 +54,6 @@ private:
     Eigen::Vector3d calculateNi(Eigen::Vector3d n0, Eigen::Vector3d n1, Eigen::Vector3d n2, Eigen::Vector3d omega, int segment, double s, double darbouxNorm, int i);
 
     // render info
-    Eigen::Vector3d color_;
     int index_; // use in milestone 2
 
     // template info

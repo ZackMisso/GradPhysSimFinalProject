@@ -105,7 +105,7 @@ void Simulation::clearScene()
         delete *it;
     }
 
-    delete renderer;
+    // delete renderer;
 
     hairs_.clear();
     interpHairs_.clear();

@@ -1,4 +1,4 @@
-#include "glrenderer.h"
+#include "glsrenderer.h"
 
 GLSRenderer::GLSRenderer()
 {
@@ -19,7 +19,6 @@ void GLSRenderer::renderFromBake(std::vector<HairInstance*> guideHairs, std::vec
 {
     // to be implemented
 }
-
 
 void GLSRenderer::constructGeom(std::vector<HairInstance*> guideHairs, std::vector<HairInstance*> interpHairs, std::vector<RigidBodyInstance*> bodies)
 {
