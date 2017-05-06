@@ -79,8 +79,6 @@ void GLRenderer::renderHairStrand(HairInstance* hair)
     //glEnable(GL_COLOR_MATERIAL);
     //glEnable(GL_NORMALIZE);
 
-    // cout << "WHAT THE FUCK" << endl;
-
     glColor4d(hair->color_[0], hair->color_[1], hair->color_[2], 1.0);
 
     glLineWidth(2.0);
@@ -92,8 +90,6 @@ void GLRenderer::renderHairStrand(HairInstance* hair)
         glVertex3d(hair->verts_(i + 1, 0), hair->verts_(i + 1, 1), hair->verts_(i + 1, 2));
     }
     glEnd();
-
-    // cout << "HELLS" << endl;
 }
 
 void GLRenderer::renderHairCylinder(HairInstance* hair)
@@ -129,8 +125,6 @@ void GLRenderer::renderHairStrandSegment(HairInstance* hair, int segment, int ma
 
     int eps = hair->getEdgesPerSegment();
 
-    //glColor4d(hair->color_[0], hair->color_[1], hair->color_[2], 1.0);
-
     glColor4d(hair->color_[0] / (maxSegment / (segment + 1)) + 0.1, hair->color_[1] / (maxSegment / (segment + 1)) + 0.1, hair->color_[2] / (maxSegment / (segment + 1)) + 0.1, 1.0);
 
     glLineWidth(2.0);
@@ -138,7 +132,6 @@ void GLRenderer::renderHairStrandSegment(HairInstance* hair, int segment, int ma
     glBegin(GL_LINES);
     for (int i = segment * eps; i < (segment + 1) * (eps); i++)
     {
-        // cout << "I: " << i << endl;
         glVertex3d(hair->verts_(i, 0), hair->verts_(i, 1), hair->verts_(i, 2));
         glVertex3d(hair->verts_(i + 1, 0), hair->verts_(i + 1, 1), hair->verts_(i + 1, 2));
     }

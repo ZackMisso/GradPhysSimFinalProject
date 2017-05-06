@@ -7,5 +7,7 @@
 class RigidBodyInstance
 {
 public:
+	RigidBodyInstance();
+	~RigidBodyInstance();
 private:
 };

@@ -42,9 +42,6 @@ private:
     void buildConfiguration(Eigen::VectorXd &q, Eigen::VectorXd &qprev, Eigen::VectorXd &v);
     void unbuildConfiguration(const Eigen::VectorXd &q, const Eigen::VectorXd &v);
 
-    void computeForceAndHessian(const Eigen::VectorXd &q, const Eigen::VectorXd &qprev, Eigen::VectorXd &F, Eigen::SparseMatrix<double> &H);
-
-    void computeMassInverse(Eigen::SparseMatrix<double> &Minv);
     void createInterpolations();
     void cleanInterpolations();
 

@@ -22,9 +22,6 @@ public:
     const Eigen::MatrixX3d &getVerts() const { return verts_; }
     const Eigen::MatrixX3d &getSegment(int seg) { return segments_[seg]; };
 
-    //void render2D(double scale);
-    //void render3D(double scale, double radius);
-
     void reconstructHair();
 
     int getNumberOfDofs();
@@ -43,7 +40,6 @@ public:
     Eigen::Matrix3d normals_;
 
     void calculateNewInitialConditions(Eigen::Vector3d q, Eigen::Vector3d start, Eigen::Matrix3d n, Eigen::Vector3d &newStart, Eigen::Matrix3d &newNorms);
-    // Eigen::Matrix3d calculateNewNorms(Eigen::Vector3d q, Eigen::Vector3d start, Eigen::Matrix3d n);
     Eigen::Vector3d rsh(double s, Eigen::Vector3d q, Eigen::Vector3d start, Eigen::Matrix3d n);
     Eigen::Matrix3d drsh(double s, Eigen::Vector3d q, Eigen::Vector3d start, Eigen::Matrix3d n);
     Eigen::Vector3d hairF(int j, Eigen::Vector3d qip1, Eigen::Vector3d qi, Eigen::Vector3d qim1, Eigen::Vector3d start, Eigen::Matrix3d norms, SimParameters params);
@@ -69,10 +65,7 @@ private:
     void initializeFromPositions(const Eigen::MatrixX3d pos, int eps, int nos);
     void initializeFromCurvatures(const Eigen::VectorXd curves, int eps, int nos, double length, Eigen::Vector3d startPos, Eigen::Matrix3d startNorm);
 
-    void computeLength();
-    void computeSegments();
-    void computeNormals();
-    void preprocessRendering();
+    void preprocessRendering(); // maybe implement later
 
     Eigen::Vector3d para(Eigen::Vector3d vec, Eigen::Vector3d omega);
     Eigen::Vector3d perp(Eigen::Vector3d vec, Eigen::Vector3d omega);
@@ -87,7 +80,6 @@ private:
     double baryOne;
     double baryTwo;
     double baryThree;
-    int index_; // use in milestone 2
 
     // template info
     Eigen::MatrixX3d template_verts_;
