@@ -39,6 +39,9 @@ void MainWindow::setParametersFromUI()
 
     params.simRunning = simRunning_;
 
+    params.baking = baking_;
+    params.bakeRunning = runBake_;
+
     params.timeStep = ui->timeStepEdit->text().toDouble();
     params.NewtonTolerance = ui->newtonTolEdit->text().toDouble();
     params.NewtonMaxIters = ui->newtonMaxItersEdit->text().toInt();
@@ -209,5 +212,19 @@ void MainWindow::on_gravityBox_editingFinished()
 void MainWindow::on_showSegmentsCheck_toggled(bool checked)
 {
     renderingSegments_ = checked;
+    setParametersFromUI();
+}
+
+void MainWindow::on_bakeButton_clicked()
+{
+    simRunning_ = false;
+    baking_ = true;
+    setParametersFromUI();
+}
+
+void MainWindow::on_runBakedSim_clicked()
+{
+    simRunning_ = false;
+    runBake_ = true;
     setParametersFromUI();
 }

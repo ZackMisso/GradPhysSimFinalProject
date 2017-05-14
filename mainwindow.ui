@@ -148,7 +148,7 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>110</y>
+            <y>100</y>
             <width>181</width>
             <height>27</height>
            </rect>
@@ -272,6 +272,19 @@
            </rect>
           </property>
          </widget>
+         <widget class="QPushButton" name="runBakedSim">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>130</y>
+            <width>181</width>
+            <height>27</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>RunBakedSim</string>
+          </property>
+         </widget>
         </widget>
        </item>
       </layout>
@@ -352,6 +365,19 @@
       </property>
       <property name="text">
        <string>HeadExample</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="bakeButton">
+      <property name="geometry">
+       <rect>
+        <x>180</x>
+        <y>80</y>
+        <width>171</width>
+        <height>27</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>BakeSim</string>
       </property>
      </widget>
     </widget>

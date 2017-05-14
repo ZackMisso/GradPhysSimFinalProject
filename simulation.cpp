@@ -28,6 +28,15 @@ void Simulation::render(bool is3D)
     }
 }
 
+void Simulation::bakeRender(bool is3D)
+{
+    if (renderLock_.tryLock())
+    {
+        renderer->render(params_, hairs_, interpHairs_, bodies_);
+        renderLock_.unlock();
+    }
+}
+
 void Simulation::takeSimulationStep()
 {
     VectorXd q, qprev, v;
@@ -45,11 +54,32 @@ void Simulation::takeSimulationStep()
     time_ += params_.timeStep;
 }
 
+void Simulation::takeBakeStep()
+{
+    VectorXd q, qprev, v;
+
+    buildConfiguration(q, qprev, v);
+
+    numericalIntegration(q, qprev, v);
+
+    unbuildConfiguration(q, v);
+    reconstruction();
+
+    cleanInterpolations();
+    createInterpolations();
+
+    bakeSystem();
+
+    time_ += params_.timeStep;
+}
+
 void Simulation::numericalIntegration(Eigen::VectorXd &q, Eigen::VectorXd &qprev, Eigen::VectorXd &v)
 {
     VectorXd guessFull = q;
 
     int total = 0;
+
+    cout << "START SIM" << endl;
 
     for (int i = 0; i < hairs_.size(); i++)
     {
@@ -97,6 +127,8 @@ void Simulation::numericalIntegration(Eigen::VectorXd &q, Eigen::VectorXd &qprev
             total += 3;
         }
     }
+
+    cout << "END SIM" << endl;
 
     q = guessFull;
 }

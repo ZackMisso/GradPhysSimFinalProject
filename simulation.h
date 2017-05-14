@@ -23,7 +23,9 @@ public:
     void addSaw(double x, double y);
 
     void takeSimulationStep();
+    void takeBakeStep();
     void render(bool is3D);
+    void bakeRender(bool is3D);
     void clearScene();
 
     std::vector<HairInstance*> hairs_;

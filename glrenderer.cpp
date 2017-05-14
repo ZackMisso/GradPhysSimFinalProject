@@ -13,7 +13,7 @@ GLRenderer::~GLRenderer()
     // to be implemented
 }
 
-void GLRenderer::render(SimParameters simparams, std::vector<HairInstance*> guideHairs, std::vector<HairInstance*> interpHairs, std::vector<RigidBodyInstance*> bodies)
+void GLRenderer::render(SimParameters simparams, std::vector<HairInstance*> &guideHairs, std::vector<HairInstance*> &interpHairs, std::vector<RigidBodyInstance*> &bodies)
 {
     if (!simparams.showSegments)
     {
@@ -45,13 +45,13 @@ void GLRenderer::render(SimParameters simparams, std::vector<HairInstance*> guid
     }
 }
 
-void GLRenderer::renderFromBake(std::vector<HairInstance*> guideHairs, std::vector<HairInstance*> interpHairs, std::vector<RigidBodyInstance*> bodies, int iteration)
+void GLRenderer::renderFromBake(std::vector<HairInstance*> &guideHairs, std::vector<HairInstance*> &interpHairs, std::vector<RigidBodyInstance*> &bodies, int iteration)
 {
     // to be implemented
 }
 
 
-void GLRenderer::constructGeom(std::vector<HairInstance*> guideHairs, std::vector<HairInstance*> interpHairs, std::vector<RigidBodyInstance*> bodies)
+void GLRenderer::constructGeom(std::vector<HairInstance*> &guideHairs, std::vector<HairInstance*> &interpHairs, std::vector<RigidBodyInstance*> &bodies)
 {
     // to be implemented
 }

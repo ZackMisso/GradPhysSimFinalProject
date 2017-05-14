@@ -55,7 +55,14 @@ void Controller::render(bool is3D)
         params_.reset = false;
         clearScene();
     }
-    sim_->render(is3D);
+    if (!params_.bakeRunning)
+    {
+        sim_->render(is3D);
+    }
+    else
+    {
+        sim->bakeRender(is3D);
+    }
 }
 
 void Controller::mouseClicked(double x, double y)
@@ -82,6 +89,10 @@ void Controller::simTick()
     if(params_.simRunning)
     {
         sim_->takeSimulationStep();
+    }
+    if(params_.baking)
+    {
+        sim_->takeBakeStep();
     }
 }
 

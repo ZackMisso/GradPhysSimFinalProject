@@ -36,6 +36,9 @@ struct SimParameters
 
     bool showSegments;
     bool show3D;
+
+    bool baking;
+    bool bakeRunning;
 };
 
 #endif // SIMPARAMETERS_H

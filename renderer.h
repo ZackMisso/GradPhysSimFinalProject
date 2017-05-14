@@ -13,9 +13,9 @@ public:
     Renderer();
     ~Renderer();
 
-    virtual void render(SimParameters simparams, std::vector<HairInstance*> guideHairs, std::vector<HairInstance*> interpHairs, std::vector<RigidBodyInstance*> bodies) = 0;
-    virtual void renderFromBake(std::vector<HairInstance*> guideHairs, std::vector<HairInstance*> interpHairs, std::vector<RigidBodyInstance*> bodies, int iteration) = 0;
-    virtual void constructGeom(std::vector<HairInstance*> guideHairs, std::vector<HairInstance*> interpHairs, std::vector<RigidBodyInstance*> bodies) = 0;
+    virtual void render(SimParameters simparams, std::vector<HairInstance*> &guideHairs, std::vector<HairInstance*> &interpHairs, std::vector<RigidBodyInstance*> &bodies) = 0;
+    virtual void renderFromBake(std::vector<HairInstance*> &guideHairs, std::vector<HairInstance*> &interpHairs, std::vector<RigidBodyInstance*> &bodies, int iteration) = 0;
+    virtual void constructGeom(std::vector<HairInstance*> &guideHairs, std::vector<HairInstance*> &interpHairs, std::vector<RigidBodyInstance*> &bodies) = 0;
     virtual void bake() = 0;
     virtual void createLight() = 0;
     virtual void initialize() = 0;

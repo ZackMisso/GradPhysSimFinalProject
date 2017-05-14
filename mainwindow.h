@@ -61,6 +61,10 @@ private slots:
 
     void on_showSegmentsCheck_toggled(bool checked);
 
+    void on_bakeButton_clicked();
+
+    void on_runBakedSim_clicked();
+
 private:
     Controller &cont_;
     Ui::MainWindow *ui;
@@ -73,6 +77,9 @@ private:
     bool sphereExample_;
     bool headExample_;
     bool reset_;
+
+    bool runBake_;
+    bool baking_;
 
     bool renderingSegments_;
 
